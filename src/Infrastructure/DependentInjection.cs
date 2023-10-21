@@ -1,7 +1,9 @@
 ﻿using Application.Common.Identity;
+using Application.Common.Interfaces;
 using Infrastructure;
 using Infrastructure.Identity;
 using Infrastructure.Options;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -43,11 +45,11 @@ public static class DependencyInjection
             options.User.RequireUniqueEmail = true;
         });
 
-
         services.AddScoped<EStoreContextInitialiser>();
 
         services.AddTransient<IIdentityService, IdentityService>();
         services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 
         return services;
     }
