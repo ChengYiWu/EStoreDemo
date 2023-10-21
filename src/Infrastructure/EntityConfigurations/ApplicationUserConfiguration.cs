@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.EntityConfigurations;
 
-public class ApplicationUserConfiguration: IEntityTypeConfiguration<ApplicationUser>
+public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
 {
     public void Configure(EntityTypeBuilder<ApplicationUser> applicationUserConfiguration)
     {
@@ -17,5 +17,7 @@ public class ApplicationUserConfiguration: IEntityTypeConfiguration<ApplicationU
 
         applicationUserConfiguration.Property(p => p.Email)
             .IsRequired();
+
+        applicationUserConfiguration.Ignore(p => p.Roles);
     }
 }

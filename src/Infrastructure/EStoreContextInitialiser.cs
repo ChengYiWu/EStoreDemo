@@ -2,6 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Infrastructure.Options;
+using Application.Common.Identity;
+using Microsoft.AspNetCore.Identity;
+using Infrastructure.Identity;
 
 namespace Infrastructure;
 
@@ -24,13 +29,29 @@ public static class InitialiserExtensions
 /// </summary>
 public class EStoreContextInitialiser
 {
-    private readonly ILogger<EStoreContextInitialiser> _logger;
     private readonly EStoreContext _context;
 
-    public EStoreContextInitialiser(ILogger<EStoreContextInitialiser> logger, EStoreContext context)
+    private readonly ILogger<EStoreContextInitialiser> _logger;
+
+    private readonly SeedDataOption _seedDataOption;
+
+    private readonly UserManager<ApplicationUser> _userManager;
+
+    private readonly RoleManager<ApplicationRole> _roleManager;
+
+    public EStoreContextInitialiser(
+        EStoreContext context,
+        ILogger<EStoreContextInitialiser> logger,
+        IOptions<SeedDataOption> seedDataOption,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<ApplicationRole> roleManager
+        )
     {
-        _logger = logger;
         _context = context;
+        _logger = logger;
+        _seedDataOption = seedDataOption.Value;
+        _userManager = userManager;
+        _roleManager = roleManager;
     }
 
     /// <summary>
@@ -54,18 +75,51 @@ public class EStoreContextInitialiser
     /// 執行預設資料寫入作業
     /// </summary>
     /// <returns></returns>
-    public Task SeedAsync()
+    public async Task SeedAsync()
     {
         try
         {
+            // 建立預設 Role 資料
+            var roles = Enum.GetNames(typeof(RoleEnum));
+            var existedRoles = await _roleManager.Roles.ToListAsync();
 
+            foreach (string role in roles)
+            {
+                if (!existedRoles.Any(r => r.Name == role))
+                {
+                    await _roleManager.CreateAsync(new ApplicationRole(role));
+                }
+            }
+
+            // 建立預設系統管理員使用者資料
+            var adminEmail = _seedDataOption.Admin.Email;
+            var adminPassword = _seedDataOption.Admin.Password;
+
+            var adminUser = await _userManager.FindByEmailAsync(adminEmail);
+
+            if (adminUser is null)
+            {
+                var newUser = new ApplicationUser
+                {
+                    UserName = "Admin",
+                    Email = adminEmail,
+                };
+
+                var result = await _userManager.CreateAsync(newUser, adminPassword);
+
+                if (!result.Succeeded)
+                {
+                    _logger.LogError($"建立預設 Admin 使用者失敗（{result}）。");
+                    return;
+                }
+
+                await _userManager.AddToRolesAsync(newUser, roles);
+            }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "執行資料庫 Seed 資料寫入時發生錯誤。");
             throw;
         }
-
-        return Task.CompletedTask;
     }
 }

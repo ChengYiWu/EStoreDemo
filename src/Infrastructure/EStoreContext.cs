@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Infrastructure;
 
-public class EStoreContext : IdentityDbContext<ApplicationUser>
+public class EStoreContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
 {
     public EStoreContext(DbContextOptions<EStoreContext> options) : base(options)
     {
