@@ -18,6 +18,9 @@ builder.Services.AddApplicationServices();
 // Infrastructure 層相依注入
 builder.Services.AddInfrastuctureServices(configuration);
 
+// WebAPI 層相依注入
+builder.Services.AddWebAPIServices(configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -32,6 +35,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

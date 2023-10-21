@@ -42,6 +42,7 @@ internal class JwtTokenGenerator : ITokenGenerator
                         .ToUnixTimeSeconds()
                         .ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.UserName)
         };
 
         // add role claims

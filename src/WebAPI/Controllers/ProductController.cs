@@ -1,5 +1,6 @@
 ﻿using Application.Products.Commands.CreateProduct;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers;
@@ -15,6 +16,7 @@ public class ProductController : ControllerBase
         _sender = sender;
     }
 
+    [Authorize(Roles ="Customer")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
