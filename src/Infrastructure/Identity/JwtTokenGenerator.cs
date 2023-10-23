@@ -42,7 +42,6 @@ internal class JwtTokenGenerator : ITokenGenerator
                         .ToUnixTimeSeconds()
                         .ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.UserName)
         };
 
         // add role claims
@@ -72,5 +71,28 @@ internal class JwtTokenGenerator : ITokenGenerator
         var serializeToken = tokenHandler.WriteToken(securityToken);
 
         return serializeToken;
+    }
+
+    public IUser GetUser(ClaimsPrincipal claimsPrincipal)
+    {
+        ApplicationUser user = new()
+        {
+            Id = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+            UserName = claimsPrincipal.FindFirst(JwtRegisteredClaimNames.Name)?.Value,
+            Email = claimsPrincipal.FindFirst(ClaimTypes.Email)?.Value,
+            Roles = claimsPrincipal.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => new ApplicationRole(c.Value))
+                .ToList()
+        };
+
+        return user;
+    }
+
+    public string GetUserId(ClaimsPrincipal claimsPrincipal)
+    {
+        var claim = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier);
+
+        return claim?.Value ?? string.Empty;
     }
 }

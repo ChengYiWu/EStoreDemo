@@ -77,8 +77,8 @@ public class GlobalExceptionMiddleware
         return context.Response.WriteAsJsonAsync(new ProblemDetails()
         {
             Status = StatusCodes.Status400BadRequest,
-            Type = "Operation Failure",
-            Title = "Operation Failure.",
+            Type = "Failure",
+            Title = "Failure",
             Detail = ex.Message
         });
     }

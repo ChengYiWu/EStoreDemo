@@ -4,5 +4,7 @@ namespace Application.Products.Commands.CreateProduct;
 
 public sealed record CreateProductCommand(
     string Name,
-    string Content
+    string Description,
+    string ImageOriFileName,
+    string ImageTmpFileName
 ) : IRequest<int>;

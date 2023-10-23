@@ -1,4 +1,5 @@
-﻿using Infrastructure.Options;
+﻿using Application.Common.Identity;
+using Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -62,6 +63,9 @@ public static class DependentInjection
 
             options.OperationFilter<SwaggerAuthOperationsFilter>();
         });
+
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUser, HttpContextCurrentUser>();
 
         return services;
     }

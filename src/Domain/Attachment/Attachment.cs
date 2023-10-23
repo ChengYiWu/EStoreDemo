@@ -12,6 +12,8 @@ public class Attachment
 
     public string Path { get; set; }
 
+    public string Uri { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public string? CreatedBy { get; set; }

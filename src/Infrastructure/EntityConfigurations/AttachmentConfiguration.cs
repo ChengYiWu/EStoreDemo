@@ -1,4 +1,5 @@
 ﻿using Domain.Attachment;
+using Domain.Product;
 using Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -17,7 +18,8 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
             .HasMaxLength(256);
 
         attachmentConfiguartion.HasDiscriminator<string>("Type")
-            .HasValue<Attachment>("Attachment");
+            .HasValue<Attachment>("Attachment")
+            .HasValue<ProductImageAttachment>("ProductImageAttachment");
 
         attachmentConfiguartion.Property(p => p.OriFileName)
             .HasMaxLength(256)
@@ -29,6 +31,9 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 
         attachmentConfiguartion.Property(p => p.Path)
             .HasMaxLength(1024)
+            .IsRequired();
+
+        attachmentConfiguartion.Property(p => p.Uri)
             .IsRequired();
 
         attachmentConfiguartion.Property(p => p.CreatedAt)

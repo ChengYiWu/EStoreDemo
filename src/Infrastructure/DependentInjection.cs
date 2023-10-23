@@ -1,9 +1,14 @@
 ﻿using Application.Common.Identity;
 using Application.Common.Interfaces;
+using Application.Common.Services.FileService;
+using Domain.Common;
+using Domain.Product;
 using Infrastructure;
 using Infrastructure.Identity;
 using Infrastructure.Options;
+using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.Services.FileService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +22,7 @@ public static class DependencyInjection
         services.Configure<SeedDataOption>(configuration.GetSection("SeedData"));
         services.Configure<JwtSettingsOption>(configuration.GetSection("JwtSettings"));
         services.Configure<ConnectionStringOption>(configuration.GetSection("ConnectionStrings"));
+        services.Configure<FileStorageOption>(configuration.GetSection("BlobStorage"));
 
         // DbContext
         var connectionStringOptions = configuration.GetSection("ConnectionStrings").Get<ConnectionStringOption>();
@@ -50,6 +56,10 @@ public static class DependencyInjection
         services.AddTransient<IIdentityService, IdentityService>();
         services.AddSingleton<ITokenGenerator, JwtTokenGenerator>();
         services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
+
+        services.AddSingleton<IProductFileUploadService, ProductFileUploadService>();
+
+        services.AddScoped<IProductRepository, ProductRepository>();
 
         return services;
     }
