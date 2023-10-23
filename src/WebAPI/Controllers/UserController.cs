@@ -1,4 +1,5 @@
-﻿using Application.Users.Queries.GetUsers;
+﻿using Application.Common.Models;
+using Application.Users.Queries.GetUsers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<UserResponse>> GetUsers([FromQuery] GetUsersQuery query, CancellationToken cancellationToken)
+        public async Task<PaginatedList<UserResponse>> GetUsers([FromQuery] GetUsersQuery query, CancellationToken cancellationToken)
         {
             return await _sender.Send(query, cancellationToken);
         }

@@ -8,10 +8,10 @@ public class UserResponse
 
     public string Email { get; set; }
 
-    public IList<RoleResponse> Roles { get; set; } = new List<RoleResponse>();
+    public IList<RoleDTO> Roles { get; set; } = new List<RoleDTO>();
 }
 
-public class RoleResponse
+public class RoleDTO
 {
     public string Name { get; set; }
 }
