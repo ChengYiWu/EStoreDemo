@@ -48,7 +48,8 @@ try
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
-        await app.InitialiseDatabaseAsync();
+        // 暫時先不用
+        //await app.InitialiseDatabaseAsync();
 
         app.UseSwagger();
         app.UseSwaggerUI();

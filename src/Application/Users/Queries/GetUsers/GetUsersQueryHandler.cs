@@ -30,25 +30,16 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
             ");
         }
 
-        var countSql = @$"
+        var sql = @$"
             SELECT COUNT([User].[Id])
             FROM [User]
-            WHERE 1 = 1 
-                {whereSql}
-        ";
+            {whereSql}
 
-        var querySql = @$"
             SELECT 
                 [User].[Id],
                 [User].[UserName],
-                [User].[Email], 
-                [Role].[Id],
-                [Role].[Name]
+                [User].[Email]
             FROM [User]
-            JOIN [UserRole]
-                ON [User].[Id] = [UserRole].[UserId]
-            JOIN [Role]
-                ON [UserRole].[RoleId] = [Role].[Id]
             {whereSql}
             ORDER BY [User].[Id] ASC
             OFFSET @Offset ROWS
@@ -56,22 +47,49 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
         ";
 
         (int offset, int next, int pageSize, int pageNumber) = QueryHelper.GetPagingParams(request.PageSize, request.PageNumber);
-        var param = new
+        var queryParam = new
         {
             Search = "%" + request.Search + "%",
             Offset = offset,
             Next = next
         };
 
-        int total = await connection.QueryFirstAsync<int>(countSql, param);
+        var queryReader = await connection.QueryMultipleAsync(sql, queryParam);
 
-        var userResponse = await connection.QueryAsync<UserResponse, RoleDTO, UserResponse>(querySql, (user, role) =>
+        var totalCount = await queryReader.ReadSingleAsync<int>();
+        var userReponses = await queryReader.ReadAsync<UserResponse>();
+
+        var detailSql = @"
+            SELECT 
+                [User].[Id] AS [UserId], 
+                [Role].[Name]
+            FROM [User]
+            JOIN [UserRole]
+                ON [User].[Id] = [UserRole].[UserId]
+            JOIN [Role]
+                ON [UserRole].[RoleId] = [Role].[Id]
+            WHERE [User].[Id] IN @Ids
+        ";
+
+        var detailParam = new
         {
-            user.Roles.Add(role);
-            return user;
-        }, param);
+            Ids = userReponses.Select(x => x.Id)
+        };
 
-        return new PaginatedList<UserResponse>(userResponse, total, pageNumber, pageSize);
+        var userRoles = await connection.QueryAsync(detailSql, detailParam);
+
+        var userRoleLookup = userRoles
+            .ToLookup(
+                userRole => userRole.UserId,
+                userRole => new RoleDTO { Name = userRole.Name }
+            );
+
+        foreach (var userResponse in userReponses)
+        {
+            userResponse.Roles = userRoleLookup[userResponse.Id].ToList();
+        }
+
+        return new PaginatedList<UserResponse>(userReponses, totalCount, pageNumber, pageSize);
     }
 
     private void ThisIsSingleQueryExample()
@@ -96,6 +114,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
         // Dapper 自動依照 Select 的 Id 欄位切分 Model，如果 Join 出來的 Table 順序會亂跳的話有可能 Model 會有重複建立的問題，
         // 故可能要使用範例第 8 種方式去 lookup，去判斷物件的 Id 是不是已經出現過了，因為 Dapper 可能會建立相同 Id 但兩個不同物件的情況。
         // Ref: https://gist.github.com/Lobstrosity/1133111
+        // Ref: https://stackoverflow.com/questions/7472088/correct-use-of-multimapping-in-dapper
         //return await connection.QueryAsync<UserResponse, RoleDTO, UserResponse>(sql, (user, role) =>
         //{
         //    user.Roles.Add(role);
