@@ -24,9 +24,22 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
         {
             Name = product.Name,
             Description = product.Description,
+            Brand = product.Brand,
+            Weight = product.Weight,
+            Dimensions = product.Dimensions,
             Images = product.Images
                 .Select(image => _productFileUploadService.FromRelativePathToAbsoluteUri(image.Path))
-                .ToList()
+                .ToList(),
+            ProductItems = product.ProductItems.Select(productItem => new ProductItemDTO()
+            {
+                Name = productItem.Name,
+                Price = productItem.Price,
+                StockQuantity = productItem.StockQuantity,
+                IsActive = productItem.IsActive,
+                Image = productItem.Image is not null 
+                    ? _productFileUploadService.FromRelativePathToAbsoluteUri(productItem.Image.Path) 
+                    : null
+            }).ToList()
         };
     }
 }

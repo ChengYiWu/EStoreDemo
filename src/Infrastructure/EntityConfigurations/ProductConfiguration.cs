@@ -20,11 +20,27 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         productConfiguration.Property(x => x.Description)
             .IsRequired();
 
-        productConfiguration.HasMany(p => p.Images);
+        productConfiguration.Property(x => x.Brand)
+            .HasMaxLength(64);
+
+        productConfiguration.Property(x => x.Weight)
+            .HasMaxLength(32);
+
+        productConfiguration.Property(x => x.Dimensions)
+            .HasMaxLength(32);
+
+        productConfiguration.HasMany(x => x.ProductItems);
+
+        productConfiguration.HasMany(x => x.Images)
+            .WithOne(x => x.Product)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        productConfiguration.Property(x => x.CreatedAt)
+            .IsRequired();
 
         productConfiguration.HasOne<ApplicationUser>()
             .WithMany()
-            .HasForeignKey(p => p.CreatedBy)
+            .HasForeignKey(x => x.CreatedBy)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

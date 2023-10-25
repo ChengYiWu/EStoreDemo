@@ -14,12 +14,10 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 
         attachmentConfiguartion.HasKey(p => p.Id);
 
-        attachmentConfiguartion.Property(p => p.Type)
-            .HasMaxLength(256);
-
-        attachmentConfiguartion.HasDiscriminator<string>("Type")
+        attachmentConfiguartion.HasDiscriminator<string>("ContentType")
             .HasValue<Attachment>("Attachment")
-            .HasValue<ProductImageAttachment>("ProductImageAttachment");
+            .HasValue<ProductImageAttachment>("ProductImageAttachment")
+            .HasValue<ProductItemImageAttachment>("ProductItemImageAttachment");
 
         attachmentConfiguartion.Property(p => p.OriFileName)
             .HasMaxLength(256)

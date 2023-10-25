@@ -27,22 +27,28 @@ public interface IUploadService
     public Task<UploadFileResult> UploadFileToTmpFolder(IFile file);
 
     /// <summary>
-    /// 實際的檔案移動暫存檔案到指定資料夾
+    /// 實際移動暫存檔案到指定位置
     /// </summary>
-    /// <param name="tmpFileName">暫存檔案名稱</param>
-    /// <param name="targetFileName">指定檔案名稱</param>
+    /// <param name="fileParam">暫存與指定檔案資訊</param>
     /// <param name="targetFolderPaths">指定檔案路徑</param>
     /// <returns></returns>
-    public Task<MoveFileResult> MoveTmpFileToTargetFolder(string tmpFileName, string targetFileName, string[] targetFolderPaths);
+    public Task<MoveFileResult> MoveTmpFileToTargetFolder(MoveFileParam fileParam, string[] targetFolderPaths);
 
     /// <summary>
     /// 預先取得存檔案移動到指定資料夾的結果，尚未執行實際的檔案移動
     /// </summary>
-    /// <param name="tmpFileName">暫存檔案名稱</param>
-    /// <param name="targetFileName">指定檔案名稱</param>
+    /// <param name="fileParam">暫存與指定檔案資訊</param>
     /// <param name="targetFolderPaths">指定檔案路徑</param>
     /// <returns></returns>
-    public MoveFileResult GetMoveTmpFileToTargetFolderResult(string tmpFileName, string targetFileName, string[] targetFolderPaths);
+    public MoveFileResult GetMoveTmpFileToTargetFolderExcpectedResult(MoveFileParam fileParam, string[] targetFolderPaths);
+
+    /// <summary>
+    /// 實際移動多個暫存檔案到指定位置
+    /// </summary>
+    /// <param name="filesParam">多筆暫存與指定檔案資訊</param>
+    /// <param name="targetFolderPaths">指定檔案路徑</param>
+    /// <returns></returns>
+    public Task<IEnumerable<MoveFileResult>> MoveTmpFilesToTargetFolder(IList<MoveFileParam> filesParam, string[] targetFolderPaths);
 
     /// <summary>
     /// 將相對路徑轉換為絕對路徑

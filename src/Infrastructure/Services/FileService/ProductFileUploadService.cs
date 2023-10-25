@@ -27,23 +27,24 @@ public class ProductFileUploadService : BaseUploadService, IProductFileUploadSer
         return await UploadFileToTmpFolder(file);
     }
 
-    public async Task<MoveFileResult> MoveProductImage(string tmpFileName, string oriFileName, string productId)
+    public async Task<MoveFileResult> MoveProductImage(MoveFileParam fileParam, int productId)
     {
-        var response = await base.MoveTmpFileToTargetFolder(
-            tmpFileName,
-            oriFileName,
-            new string[] { PRODUCT_FILE_ROOT_FOLDER, productId }
-        );
+        return await base.MoveTmpFileToTargetFolder(fileParam, GetProductImageFolderPath(productId));
 
-        return response;
     }
 
-    public MoveFileResult GetMoveProductImageResult(string tmpFileName, string targetFileName, string productId)
+    public async Task<IEnumerable<MoveFileResult>> MoveProductImages(IList<MoveFileParam> filesParam, int productId)
     {
-        return base.GetMoveTmpFileToTargetFolderResult(
-            tmpFileName,
-            targetFileName,
-            new string[] { PRODUCT_FILE_ROOT_FOLDER, productId }
-        );
+        return await base.MoveTmpFilesToTargetFolder(filesParam, GetProductImageFolderPath(productId));
+    }
+
+    public MoveFileResult GetMoveProductImageExcpectedResult(MoveFileParam fileParam, int productId)
+    {
+        return base.GetMoveTmpFileToTargetFolderExcpectedResult(fileParam, GetProductImageFolderPath(productId));
+    }
+
+    private static string[] GetProductImageFolderPath(int productId)
+    {
+        return new string[] { PRODUCT_FILE_ROOT_FOLDER, productId.ToString() };
     }
 }

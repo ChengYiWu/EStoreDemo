@@ -4,7 +4,7 @@ namespace Application.Common.Services.FileService.Models;
 
 public class MoveFileResult : Result
 {
-    public MoveFileDto? File { get; set; }
+    public MoveFileDto File { get; set; } = new();
 }
 
 public class MoveFileDto

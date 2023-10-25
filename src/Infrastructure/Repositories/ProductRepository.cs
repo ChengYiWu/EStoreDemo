@@ -13,6 +13,8 @@ public class ProductRepository : BaseRepository<Product, int>, IProductRepositor
     {
         return await _dbSet
            .Include(p => p.Images)
+           .Include(p => p.ProductItems)
+           .ThenInclude(productItem => productItem.Image)
            .FirstOrDefaultAsync(p => p.Id == id);
     }
 }

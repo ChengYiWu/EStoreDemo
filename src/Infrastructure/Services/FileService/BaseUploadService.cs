@@ -3,7 +3,9 @@ using Application.Common.Models;
 using Application.Common.Services.FileService;
 using Application.Common.Services.FileService.Models;
 using Application.Common.Services.FileService.Validators;
+using Azure;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using FluentValidation;
 using Infrastructure.Options;
 using Microsoft.Extensions.Options;
@@ -71,19 +73,19 @@ public class BaseUploadService : IUploadService
         return response;
     }
 
-    public virtual MoveFileResult GetMoveTmpFileToTargetFolderResult(string tmpFileName, string oriFileName, string[] targetFolderPaths)
+    public virtual MoveFileResult GetMoveTmpFileToTargetFolderExcpectedResult(MoveFileParam fileParam, string[] targetFolderPaths)
     {
         MoveFileResult response = new();
 
-        (string sourceFileNameWithPath, string destinationFileNameWithPath) = GetSourceAndDestinationFilePath(tmpFileName, oriFileName, targetFolderPaths);
+        (string sourceFileNameWithPath, string destinationFileNameWithPath) = GetSourceAndDestinationFilePath(fileParam.TmpFileName, fileParam.TargetFileName, targetFolderPaths);
 
         BlobClient destinationFileClient = _container.GetBlobClient(destinationFileNameWithPath);
 
         response.IsSucceed = true;
         response.File = new MoveFileDto
         {
-            OriFileName = oriFileName,
-            FileName = tmpFileName,
+            OriFileName = fileParam.TargetFileName,
+            FileName = fileParam.TmpFileName,
             Path = destinationFileNameWithPath,
             Uri = destinationFileClient.Uri.AbsoluteUri
         };
@@ -91,19 +93,19 @@ public class BaseUploadService : IUploadService
         return response;
     }
 
-    public virtual async Task<MoveFileResult> MoveTmpFileToTargetFolder(string tmpFileName, string oriFileName, string[] targetFolderPaths)
+    public virtual async Task<MoveFileResult> MoveTmpFileToTargetFolder(MoveFileParam fileParam, string[] targetFolderPaths)
     {
         MoveFileResult response = new();
 
         (string sourceFileNameWithPath, string destinationFileNameWithPath) =
-            GetSourceAndDestinationFilePath(tmpFileName, oriFileName, targetFolderPaths);
+            GetSourceAndDestinationFilePath(fileParam.TmpFileName, fileParam.TargetFileName, targetFolderPaths);
 
         BlobClient sourceFileClient = _container.GetBlobClient(sourceFileNameWithPath);
 
         if (!await sourceFileClient.ExistsAsync())
         {
             response.IsSucceed = false;
-            response.Message = $"Tmp File {tmpFileName} is not exist";
+            response.Message = $"Tmp File {fileParam.TmpFileName} is not exist";
             return response;
         }
 
@@ -119,13 +121,32 @@ public class BaseUploadService : IUploadService
         response.Message = $"Tmp File {sourceFileNameWithPath} is moved to {destinationFileNameWithPath} successfuly.";
         response.File = new MoveFileDto
         {
-            OriFileName = oriFileName,
-            FileName = tmpFileName,
+            OriFileName = fileParam.TargetFileName,
+            FileName = fileParam.TmpFileName,
             Path = destinationFileNameWithPath,
             Uri = destinationFileClient.Uri.AbsoluteUri
         };
 
         return response;
+    }
+
+    /// <summary>
+    /// 複製暫存檔案到目標資料夾
+    /// TODO: 這裡可以嘗試用 Task.WaitAll () 來實作
+    /// </summary>
+    /// <param name="filesParam"></param>
+    /// <param name="targetFolderPaths"></param>
+    /// <returns></returns>
+    public virtual async Task<IEnumerable<MoveFileResult>> MoveTmpFilesToTargetFolder(IList<MoveFileParam> filesParam, string[] targetFolderPaths)
+    {
+        var resultList = new List<MoveFileResult>();
+
+        foreach (var fileParam in filesParam)
+        {
+            resultList.Add(await MoveTmpFileToTargetFolder(fileParam, targetFolderPaths));
+        }
+
+        return resultList;
     }
 
     /// <summary>

@@ -4,13 +4,48 @@ namespace Domain.Product;
 
 public class Product : BaseEntity<int>
 {
-    public string Name { get; set; }
+    /// <summary>
+    /// 商品名稱
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
 
-    public string Description { get; set; }
+    /// <summary>
+    /// 商品描述
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
 
+    /// <summary>
+    /// 品牌
+    /// </summary>
+    public string? Brand { get; set; }
+
+    /// <summary>
+    /// 重量
+    /// </summary>
+    public string? Weight { get; set; }
+
+    /// <summary>
+    /// 尺寸
+    /// </summary>
+    public string? Dimensions { get; set; }
+
+    /// <summary>
+    /// 商品項目
+    /// </summary>
+    public ICollection<ProductItem> ProductItems { get; set; } = new List<ProductItem>();
+
+    /// <summary>
+    /// 商品圖片
+    /// </summary>
     public ICollection<ProductImageAttachment> Images { get; set; } = new List<ProductImageAttachment>();
 
+    /// <summary>
+    /// 建立時間
+    /// </summary>
     public DateTimeOffset CreatedAt { get; set; }
 
+    /// <summary>
+    /// 建立者
+    /// </summary>
     public string? CreatedBy { get; set; }
 }

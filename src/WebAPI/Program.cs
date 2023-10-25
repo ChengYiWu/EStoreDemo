@@ -60,6 +60,8 @@ try
 
     app.UseMiddleware<GlobalExceptionMiddleware>();
 
+    app.UseMiddleware<TransactionMiddleware>();
+
     app.UseHttpsRedirection();
 
     app.UseAuthentication();
