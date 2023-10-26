@@ -48,4 +48,14 @@ public class Product : BaseEntity<int>
     /// 建立者
     /// </summary>
     public string? CreatedBy { get; set; }
+
+    /// <summary>
+    /// 修改時間
+    /// </summary>
+    public DateTimeOffset? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// 修改者
+    /// </summary>
+    public string? UpdatedBy { get; set; }
 }

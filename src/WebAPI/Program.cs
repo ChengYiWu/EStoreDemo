@@ -2,6 +2,7 @@ using Infrastructure;
 using Serilog.Events;
 using Serilog;
 using WebAPI.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 
 // Ref: https://blog.miniasp.com/post/2021/11/29/How-to-use-Serilog-with-NET-6
 // 此處設定避免 Host 啟用發生錯誤時沒有紀錄到 log

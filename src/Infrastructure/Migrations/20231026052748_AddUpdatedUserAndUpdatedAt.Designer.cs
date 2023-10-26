@@ -4,6 +4,7 @@ using Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(EStoreContext))]
-    partial class EStoreContextModelSnapshot : ModelSnapshot
+    [Migration("20231026052748_AddUpdatedUserAndUpdatedAt")]
+    partial class AddUpdatedUserAndUpdatedAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,7 +105,7 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
@@ -154,7 +157,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("StockQuantity")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("UpdatedAt")
+                    b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("UpdatedBy")
@@ -323,12 +326,12 @@ namespace Infrastructure.Migrations
                     b.HasOne("Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.ClientCascade);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.ClientCascade);
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Domain.Product.ProductItem", b =>
@@ -336,7 +339,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.ClientCascade);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("Domain.Product.Product", null)
                         .WithMany("ProductItems")
@@ -347,7 +350,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.ClientCascade);
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -370,7 +373,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Product.Product", "Product")
                         .WithMany("Images")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Product");
@@ -381,7 +384,7 @@ namespace Infrastructure.Migrations
                     b.HasOne("Domain.Product.ProductItem", "ProductItem")
                         .WithOne("Image")
                         .HasForeignKey("Domain.Product.ProductItemImageAttachment", "ProductItemId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("ProductItem");

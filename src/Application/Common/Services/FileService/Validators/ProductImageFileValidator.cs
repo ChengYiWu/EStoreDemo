@@ -1,4 +1,5 @@
-﻿using Application.Common.Share;
+﻿using Application.Common.Extensions;
+using Application.Common.Share;
 
 namespace Application.Common.Services.FileService.Validators;
 

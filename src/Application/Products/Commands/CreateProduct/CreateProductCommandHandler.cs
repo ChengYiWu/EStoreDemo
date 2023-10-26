@@ -66,7 +66,7 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
         await _productRepository.SaveChangesAsync(cancellationToken);
 
         // 取得商品 Id 後，新增商品相關圖片資料（DB）
-        var productImageParams = request.Images.Select(image => image.ToMoveFileParam()).ToList();
+        var productImageParams = request.NewImages.Select(image => image.ToMoveFileParam()).ToList();
 
         var productImages = productImageParams.Select(imageParam =>
         {
@@ -85,7 +85,7 @@ public sealed class CreateProductCommandHandler : IRequestHandler<CreateProductC
 
         newProduct.Images = productImages;
 
-        var productItemImageParams = request.ProductItems.Select((productItem) => productItem.Image?.ToMoveFileParam()).ToList();
+        var productItemImageParams = request.ProductItems.Select((productItem) => productItem.NewImage?.ToMoveFileParam()).ToList();
 
         newProduct.ProductItems = newProduct.ProductItems.Select((productItem, index) =>
         {

@@ -33,7 +33,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
         productConfiguration.HasMany(x => x.Images)
             .WithOne(x => x.Product)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.ClientCascade);
 
         productConfiguration.Property(x => x.CreatedAt)
             .IsRequired();
@@ -41,6 +41,13 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         productConfiguration.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.CreatedBy)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.ClientCascade);
+
+        productConfiguration.Property(x => x.UpdatedAt);
+
+        productConfiguration.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(x => x.UpdatedBy)
+            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }

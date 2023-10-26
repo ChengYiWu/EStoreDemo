@@ -9,7 +9,7 @@ public record CreateProductCommand(
     string? Brand,
     string? Weight,
     string? Dimensions,
-    List<UploadedFileDTO> Images,
+    List<UploadedFileDTO> NewImages,
     List<CreateProductItemDTO> ProductItems
 ) : IRequest<int>;
 
@@ -18,6 +18,6 @@ public record CreateProductItemDTO(
     decimal Price,
     int StockQuantity,
     bool? IsActive,
-    UploadedFileDTO? Image
+    UploadedFileDTO? NewImage
 );
 

@@ -31,11 +31,21 @@ public class ProductItemConfiguration : IEntityTypeConfiguration<ProductItem>
         productItemConfiguration
             .HasOne(p => p.Image)
             .WithOne(p => p.ProductItem)
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.ClientCascade);
+
+        productItemConfiguration.Property(x => x.CreatedAt)
+            .IsRequired();
 
         productItemConfiguration.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(p => p.CreatedBy)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.ClientCascade);
+
+        productItemConfiguration.Property(x => x.UpdatedAt);
+
+        productItemConfiguration.HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(x => x.UpdatedBy)
+            .OnDelete(DeleteBehavior.ClientCascade);
     }
 }

@@ -2,11 +2,11 @@
 using Application.Common.Models.Commands;
 using FluentValidation;
 
-namespace Application.Products.Commands.CreateProduct;
+namespace Application.Products.Commands.UpdateProduct;
 
-public sealed class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
+public class UpdateProductCommandValidator : AbstractValidator<UpdateProductCommand>
 {
-    public CreateProductCommandValidator()
+    public UpdateProductCommandValidator()
     {
         RuleFor(x => x.Name)
             .NotEmpty()
@@ -29,10 +29,14 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
             .NullOrNotWhitespace()
             .MaximumLength(32);
 
-        RuleFor(x => x.NewImages)
-            .NotEmpty()
+        RuleFor(x => x.OriImageIds)
             .NotNull()
-            .Must(x => x.Count <= 5).WithMessage("最多上傳 5 張圖片。")
+            .Must(ids => ids is null || ids.All(ids => !string.IsNullOrWhiteSpace(ids)))
+            .WithMessage("不可包含空字串。")
+            .Must((obj, Ids) => obj.NewImages.Count + Ids.Count <= 5)
+            .WithMessage("最多上傳 5 張圖片。");
+
+        RuleFor(x => x.NewImages)
             .ForEach(x =>
             {
                 x.NotNull();
@@ -67,6 +71,9 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
                         .NotEmpty()
                         .NotNull()
                         .Boolean();
+
+                    y.RuleFor(z => z.OriImageId)
+                        .NullOrNotWhitespace();
 
                     y.When(z => z.NewImage is not null, () =>
                     {

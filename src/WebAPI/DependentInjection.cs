@@ -1,6 +1,7 @@
 ﻿using Application.Common.Identity;
 using Infrastructure.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Security.Claims;
@@ -13,6 +14,12 @@ public static class DependentInjection
 {
     public static IServiceCollection AddWebAPIServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // 停用預設 Model State 驗證，已改用 FluentValidation
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
+
         JwtSettingsOption? jwtSettingOption = configuration
             .GetSection("JwtSettings")
             .Get<JwtSettingsOption>() 
