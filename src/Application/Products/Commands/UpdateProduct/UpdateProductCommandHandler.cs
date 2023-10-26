@@ -9,6 +9,10 @@ using MediatR;
 
 namespace Application.Products.Commands.UpdateProduct;
 
+/// <summary>
+/// TODO:
+///     1. 已有訂單產生的 ProductItem 不可刪除，但可以停用
+/// </summary>
 public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand, bool>
 {
     private readonly IProductRepository _productRepository;

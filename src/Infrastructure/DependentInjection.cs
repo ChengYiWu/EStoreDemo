@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Services.FileService;
 using Domain.Common;
+using Domain.Order;
 using Domain.Product;
 using Infrastructure;
 using Infrastructure.Identity;
@@ -60,6 +61,7 @@ public static class DependencyInjection
         services.AddSingleton<IProductFileUploadService, ProductFileUploadService>();
 
         services.AddScoped<IProductRepository, ProductRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
 
         return services;
     }

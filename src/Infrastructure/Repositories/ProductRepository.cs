@@ -17,4 +17,14 @@ public class ProductRepository : BaseRepository<Product, int>, IProductRepositor
            .ThenInclude(productItem => productItem.Image)
            .FirstOrDefaultAsync(p => p.Id == id);
     }
+
+    public async Task<IEnumerable<Product>> GetProductByProductItemIds(IList<int> productItemIds)
+    {
+        return await _dbSet
+            .Include(p => p.ProductItems)
+            .Where(p => p.ProductItems.Any(
+                productItem => productItemIds.Any(id => productItem.Id == id))
+            )
+            .ToListAsync();
+    }
 }
