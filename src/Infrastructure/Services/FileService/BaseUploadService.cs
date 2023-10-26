@@ -4,6 +4,7 @@ using Application.Common.Services.FileService.Models;
 using Application.Common.Services.FileService.Validators;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
+using Domain.Attachment;
 using FluentValidation;
 using Infrastructure.Options;
 using Microsoft.Extensions.Options;
@@ -176,6 +177,31 @@ public class BaseUploadService : IUploadService
     /// <summary>
     /// 刪除檔案
     /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    public Task DeleteFile(Attachment file)
+    {
+        return DeleteFile(file.Path);
+    }
+
+    /// <summary>
+    /// 刪除多個檔案
+    /// </summary>
+    /// <param name="files"></param>
+    /// <returns></returns>
+    public async Task DeleteFiles(IEnumerable<Attachment> files)
+    {
+        var checkedFiles = files.Where(file => !string.IsNullOrEmpty(file.Path));
+
+        if (checkedFiles.Any())
+        {
+            await DeleteFiles(checkedFiles.Select(file => file.Path));
+        }
+    }
+
+    /// <summary>
+    /// 刪除檔案
+    /// </summary>
     /// <param name="fileName"></param>
     /// <returns></returns>
     public virtual async Task DeleteFile(string fileName)
@@ -228,4 +254,5 @@ public class BaseUploadService : IUploadService
 
         return (sourceFileNameWithPath, destinationFileNameWithPath);
     }
+
 }

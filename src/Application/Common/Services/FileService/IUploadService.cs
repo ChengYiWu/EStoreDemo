@@ -1,4 +1,5 @@
 ﻿using Application.Common.Services.FileService.Models;
+using Domain.Attachment;
 
 namespace Application.Common.Services.FileService;
 
@@ -49,6 +50,20 @@ public interface IUploadService
     /// <param name="targetFolderPaths">指定檔案路徑</param>
     /// <returns></returns>
     public Task<IEnumerable<MoveFileResult>> MoveTmpFilesToTargetFolder(IList<MoveFileParam> filesParam, string[] targetFolderPaths);
+
+    /// <summary>
+    /// 刪除檔案
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    public Task DeleteFile(Attachment file);
+
+    /// <summary>
+    /// 刪除多個檔案
+    /// </summary>
+    /// <param name="files"></param>
+    /// <returns></returns>
+    public Task DeleteFiles(IEnumerable<Attachment> files);
 
     /// <summary>
     /// 刪除檔案

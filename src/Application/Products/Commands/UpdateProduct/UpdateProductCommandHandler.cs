@@ -3,6 +3,7 @@ using Application.Common.Extensions;
 using Application.Common.Identity;
 using Application.Common.Services.FileService;
 using Application.Common.Services.FileService.Models;
+using Domain.Attachment;
 using Domain.Product;
 using MediatR;
 
@@ -33,7 +34,8 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             throw new NotFoundException($"未找到商品編號 {request.Id} 的商品。請確保您輸入的編號正確，或者商品可能已被刪除。");
         }
 
-        List<MoveFileParam> newImages = new();
+        var newImages = new List<MoveFileParam>();
+        var oldImages = new List<Attachment>();
 
         // 更新商品屬性
         product.Name = request.Name;
@@ -43,13 +45,19 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         product.Dimensions = request.Dimensions;
         product.UpdatedAt = DateTimeOffset.UtcNow;
         product.UpdatedBy = currentUserId;
-        // 刪除商品圖片
-        product.Images = product.Images.Where(image => request.OriImageIds.Contains(image.Id.ToString())).ToList();
+
+        var retainedProductImages = product.Images.Where(image => request.OriImageIds.Contains(image.Id.ToString())).ToList();
+        var deletedProductImages = product.Images.Except(retainedProductImages).ToList();
+
+        product.Images = retainedProductImages;
+
+        // 紀錄要刪除的商品圖片
+        oldImages.AddRange(deletedProductImages);
 
         // 新增商品圖片
         var newProductImageParams = request.NewImages.Select(image => image.ToMoveFileParam()).ToList();
 
-        newImages.Concat(newProductImageParams);
+        newImages.AddRange(newProductImageParams);
 
         foreach (var newProductImageParam in newProductImageParams)
         {
@@ -65,19 +73,20 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             });
         }
 
-        _productRepository.Update(product);
-        await _productRepository.SaveChangesAsync(cancellationToken);
-
         var oriProductItems = request.ProductItems.Where(x => x.Id is not null).ToList();
-        var newProductItems = request.ProductItems.Where(x => x.Id is null).ToList();
+        var newProductItems = request.ProductItems.Except(oriProductItems).ToList();
 
-        // 刪除商品項目
-        product.ProductItems = product.ProductItems
+        // 新增或刪除商品項目
+        var retainedProductItems = product.ProductItems
             .Where(productItem => oriProductItems.Any(x => x.Id == productItem.Id))
             .ToList();
+        var deletedProductItems = product.ProductItems.Except(retainedProductItems).ToList();
+
+        // 紀錄要刪除的商品圖片
+        oldImages.AddRange(deletedProductItems.Where(x => x.Image is not null).Select(x => x.Image!));
 
         // 更新商品項目
-        product.ProductItems = product.ProductItems.Select(productItem =>
+        product.ProductItems = retainedProductItems.Select(productItem =>
         {
             var updateProductItem = oriProductItems.First(x => x.Id == productItem.Id);
 
@@ -88,8 +97,15 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             productItem.UpdatedAt = DateTimeOffset.Now;
             productItem.UpdatedBy = currentUserId;
 
+            var isExistImage = productItem.Image is not null;
+
             if (updateProductItem.OriImageId is null && updateProductItem.NewImage is null)
             {
+                if (isExistImage)
+                {
+                    oldImages.Add(productItem.Image!);
+                }
+
                 productItem.Image = null;
             }
             else if (updateProductItem.NewImage is not null)
@@ -110,6 +126,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                     CreatedAt = DateTimeOffset.Now,
                     CreatedBy = currentUserId
                 };
+
+                if (isExistImage)
+                {
+                    oldImages.Add(productItem.Image!);
+                }
             }
 
             return productItem;
@@ -155,8 +176,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
         _productRepository.Update(product);
         await _productRepository.SaveChangesAsync(cancellationToken);
 
-        // 最後移動暫存檔案到正式資料夾
+        // 新圖片搬移
         await _productFileUploadService.MoveProductImages(newImages, product.Id);
+
+        // 舊圖片刪除
+        await _productFileUploadService.DeleteFiles(oldImages);
 
         return true;
     }
