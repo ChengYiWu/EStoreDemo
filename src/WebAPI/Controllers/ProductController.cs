@@ -1,5 +1,6 @@
 ﻿using Application.Common.Models;
 using Application.Products.Commands.CreateProduct;
+using Application.Products.Commands.DeleteProduct;
 using Application.Products.Commands.UpdateProduct;
 using Application.Products.Commands.UploadProductImage;
 using Application.Products.Queries.GetProduct;
@@ -64,6 +65,22 @@ public class ProductController : ControllerBase
         command.Id = id;
 
         return await _sender.Send(command, cancellationToken);
+    }
+
+    /// <summary>
+    /// 刪除商品 API
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [Authorize]
+    [HttpDelete]
+    [Route("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<bool> DeleteProduct(int id, CancellationToken cancellationToken)
+    {
+        return await _sender.Send(new DeleteProductCommand(id), cancellationToken);
     }
 
     /// <summary>

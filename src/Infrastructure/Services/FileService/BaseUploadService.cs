@@ -1,11 +1,9 @@
 ﻿using Application.Common.Exceptions;
-using Application.Common.Models;
 using Application.Common.Services.FileService;
 using Application.Common.Services.FileService.Models;
 using Application.Common.Services.FileService.Validators;
-using Azure;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
+using Azure.Storage.Blobs.Specialized;
 using FluentValidation;
 using Infrastructure.Options;
 using Microsoft.Extensions.Options;
@@ -175,13 +173,59 @@ public class BaseUploadService : IUploadService
         return _container.GetBlobClient(relativePath).Uri.AbsoluteUri;
     }
 
+    /// <summary>
+    /// 刪除檔案
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public virtual async Task DeleteFile(string fileName)
+    {
+        await DeleteFiles(new string[] { fileName });
+    }
+
+    /// <summary>
+    /// 刪除多個檔案
+    /// </summary>
+    /// <param name="fileNames"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public virtual async Task DeleteFiles(IEnumerable<string> fileNames)
+    {
+        BlobBatchClient batch = _blobServiceClient.GetBlobBatchClient();
+
+        var distinctFileNames = fileNames.Distinct();
+
+        // 檢查檔案是否存在
+        var existsTasks = distinctFileNames
+            .Select(fileName => _container.GetBlobClient(fileName).ExistsAsync())
+            .ToList();
+
+        var fileExistes = await Task.WhenAll(existsTasks);
+
+        // 剔除不存在的檔案
+        var blobClients = distinctFileNames
+            .Where((file, index) => fileExistes[index].Value)
+            .Select(fileName => _container.GetBlobClient(fileName))
+            .ToList();
+
+        // TODO: 這個批次刪除有一些限制尚未實作，如檔案數量上限為 256 個，request body 大小 4MB.
+        // Ref: (https://learn.microsoft.com/en-us/dotnet/api/overview/azure/storage.blobs.batch-readme?view=azure-dotnet#key-concepts)
+        if (blobClients.Any())
+        {
+            await batch.DeleteBlobsAsync(blobClients.Select(blob => blob.Uri));
+        }
+    }
+
+    private string GetSourceFilePath(string tmpFileName)
+    {
+        return string.Join("/", TMP_FOLDER, tmpFileName);
+    }
+
     private (string, string) GetSourceAndDestinationFilePath(string tmpFileName, string oriFileName, string[] targetFolderPaths)
     {
-        string sourceFileNameWithPath = string.Join("/", TMP_FOLDER, tmpFileName);
+        string sourceFileNameWithPath = GetSourceFilePath(tmpFileName);
         string destinationFileNameWithPath = string.Join("/", targetFolderPaths.Append(tmpFileName));
 
         return (sourceFileNameWithPath, destinationFileNameWithPath);
     }
-
-
 }

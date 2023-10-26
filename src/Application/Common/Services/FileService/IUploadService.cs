@@ -51,6 +51,20 @@ public interface IUploadService
     public Task<IEnumerable<MoveFileResult>> MoveTmpFilesToTargetFolder(IList<MoveFileParam> filesParam, string[] targetFolderPaths);
 
     /// <summary>
+    /// 刪除檔案
+    /// </summary>
+    /// <param name="fileName"></param>
+    /// <returns></returns>
+    public Task DeleteFile(string fileName);
+
+    /// <summary>
+    /// 刪除多個檔案
+    /// </summary>
+    /// <param name="fileNames"></param>
+    /// <returns></returns>
+    public Task DeleteFiles(IEnumerable<string> fileNames);
+
+    /// <summary>
     /// 將相對路徑轉換為絕對路徑
     /// </summary>
     /// <param name="relativePath">相對路徑</param>

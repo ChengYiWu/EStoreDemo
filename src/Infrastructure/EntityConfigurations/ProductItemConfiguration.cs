@@ -28,6 +28,7 @@ public class ProductItemConfiguration : IEntityTypeConfiguration<ProductItem>
         productItemConfiguration.Property(x => x.IsActive)
             .HasDefaultValue(false);
 
+        // 聯集刪除關係請讀這篇文章:https://learn.microsoft.com/zh-tw/ef/core/saving/cascade-delete
         productItemConfiguration
             .HasOne(p => p.Image)
             .WithOne(p => p.ProductItem)
