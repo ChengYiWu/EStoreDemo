@@ -13,6 +13,9 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         orderConfiguration.HasKey(x => x.Id);
 
+        orderConfiguration.HasIndex(x => x.OrderNo)
+            .IsUnique();
+
         orderConfiguration.Property(x => x.OrderNo)
             .HasMaxLength(64)
             .IsRequired();

@@ -1,6 +1,10 @@
-﻿using Application.Orders.Commands.ChangeOrderToShippedStatus;
+﻿using Application.Common.Models;
+using Application.Orders.Commands.ChangeOrderToShippedStatus;
 using Application.Orders.Commands.ChengeOrderToCancelledStstus;
 using Application.Orders.Comnmands.PlaceOrder;
+using Application.Orders.Queries.GetOrder;
+using Application.Orders.Queries.GetOrders;
+using Application.Orders.Queries.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +20,21 @@ namespace WebAPI.Controllers
         public OrderController(ISender sender)
         {
             _sender = sender;
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<PaginatedList<OrderResponse>> GetOrders([FromQuery] GetOrdersQuery query, CancellationToken cancellationToken)
+        {
+            return await _sender.Send(query, cancellationToken);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("{orderNo}")]
+        public async Task<OrderResponse> GetOrder(string orderNo, CancellationToken cancellationToken)
+        {
+            return await _sender.Send(new GetOrderQuery(orderNo), cancellationToken);
         }
 
         /// <summary>
