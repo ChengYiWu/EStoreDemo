@@ -24,5 +24,12 @@ public class Order : BaseEntity<int>
 
     public string CustomerId { get; set; } = string.Empty;
 
+    public int? UsedCouponId { get; set; }
+
+    /// <summary>
+    /// 簡單 Demo，故只可使用一張優惠券，實務上應該要有多個折扣
+    /// </summary>
+    public Coupon.Coupon? UsedCoupon { get; set; }
+
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

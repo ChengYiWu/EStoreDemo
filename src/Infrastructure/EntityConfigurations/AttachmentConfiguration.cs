@@ -14,6 +14,8 @@ public class AttachmentConfiguration : IEntityTypeConfiguration<Attachment>
 
         attachmentConfiguartion.HasKey(p => p.Id);
 
+        // 需注意，採用 TPH 策略時，是無法將已存在的資料轉換成其他子類別，只能刪除原有資料後，重新新增
+        // 因此，如果有需要將資料轉換成其他子類別的需求，請採用 TPT 策略
         attachmentConfiguartion.HasDiscriminator<string>("ContentType")
             .HasValue<Attachment>("Attachment")
             .HasValue<ProductImageAttachment>("ProductImageAttachment")

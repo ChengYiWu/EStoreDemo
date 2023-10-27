@@ -83,6 +83,11 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasForeignKey(p => p.CustomerId)
             .OnDelete(DeleteBehavior.ClientCascade);
 
+        orderConfiguration.HasOne(x => x.UsedCoupon)
+            .WithMany()
+            .HasForeignKey(x => x.UsedCouponId)
+            .OnDelete(DeleteBehavior.ClientCascade);
+
         orderConfiguration.HasMany(x => x.OrderItems);
     }
 }

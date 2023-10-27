@@ -2,6 +2,7 @@
 using Application.Common.Interfaces;
 using Application.Common.Services.FileService;
 using Domain.Common;
+using Domain.Coupon;
 using Domain.Order;
 using Domain.Product;
 using Infrastructure;
@@ -62,6 +63,7 @@ public static class DependencyInjection
 
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<ICouponRepository, CouponRepository>();
 
         return services;
     }

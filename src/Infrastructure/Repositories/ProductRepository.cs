@@ -27,4 +27,9 @@ public class ProductRepository : BaseRepository<Product, int>, IProductRepositor
             )
             .ToListAsync();
     }
+
+    public async Task<bool> IsAllProductsExist(IList<int> productIds)
+    {
+        return await _query.CountAsync(p => productIds.Contains(p.Id)) == productIds.Count;
+    }
 }

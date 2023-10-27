@@ -1,4 +1,5 @@
 ﻿using Domain.Common;
+using Domain.Coupon;
 
 namespace Domain.Product;
 
@@ -38,6 +39,11 @@ public class Product : BaseEntity<int>
     /// 商品圖片
     /// </summary>
     public ICollection<ProductImageAttachment> Images { get; set; } = new List<ProductImageAttachment>();
+
+    /// <summary>
+    /// 可採用優惠券
+    /// </summary>s
+    public ICollection<CouponApplicableProduct> Coupons { get; set; } = new List<CouponApplicableProduct>();
 
     /// <summary>
     /// 建立時間

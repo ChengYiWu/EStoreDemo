@@ -8,7 +8,7 @@ public class GetOrdersQueryValidator : AbstractValidator<GetOrdersQuery>
     public GetOrdersQueryValidator()
     {
         RuleFor(x => x.Status)
-            .IsInEnum();
+            .IsEnumName(typeof(OrderStatus));
 
         RuleFor(x => x.EndAt)
             .Must(x => DateTime.TryParse(x, out _))

@@ -120,7 +120,7 @@ public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, PaginatedLi
         var param = new
         {
             Search = $"%{request.Search}%",
-            Status = request.Status.ToString(),
+            request.Status,
             request.StartAt,
             request.EndAt,
             Offset,

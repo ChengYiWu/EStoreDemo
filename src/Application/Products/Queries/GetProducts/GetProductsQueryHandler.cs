@@ -2,11 +2,9 @@
 using Application.Common.Models;
 using Application.Common.Services.FileService;
 using Application.Common.Utils;
-using Application.Orders.Queries.Models;
 using Application.Products.Queries.Models;
 using Dapper;
 using MediatR;
-using System.Collections.Specialized;
 using System.Text;
 
 namespace Application.Products.Queries.GetProducts;

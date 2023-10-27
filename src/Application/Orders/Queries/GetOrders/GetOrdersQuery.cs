@@ -7,7 +7,7 @@ namespace Application.Orders.Queries.GetOrders;
 
 public record GetOrdersQuery(
     string? Search,
-    OrderStatus? Status,
+    string? Status,
     string? StartAt,
     string? EndAt,
     int PageNumber = 1,
