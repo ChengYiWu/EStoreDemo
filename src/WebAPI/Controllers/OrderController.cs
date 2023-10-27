@@ -1,4 +1,5 @@
 ﻿using Application.Orders.Commands.ChangeOrderToShippedStatus;
+using Application.Orders.Commands.ChengeOrderToCancelledStstus;
 using Application.Orders.Comnmands.PlaceOrder;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +33,12 @@ namespace WebAPI.Controllers
             return await _sender.Send(command, cancellationToken);
         }
 
+        /// <summary>
+        /// 變更訂單狀態為已出貨 API
+        /// </summary>
+        /// <param name="orderNo"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         [Route("{orderNo}/shipped")]
@@ -42,5 +49,22 @@ namespace WebAPI.Controllers
             return await _sender.Send(new ChangeOrderToShippedStatusCommand(orderNo), cancellationToken);
         }
 
+        /// <summary>
+        /// 變更訂單狀態為已取消 API
+        /// </summary>
+        /// <param name="orderNo"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        [Route("{orderNo}/cancelled")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<bool> ChangeOrderStatusToCancelled(string orderNo, ChangeOrderToCancelledStatusCommand command, CancellationToken cancellationToken)
+        {
+            command.OrderNo = orderNo;
+
+            return await _sender.Send(command, cancellationToken);
+        }
     }
 }

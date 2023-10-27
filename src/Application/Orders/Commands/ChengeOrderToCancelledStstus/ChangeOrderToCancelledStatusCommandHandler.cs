@@ -3,20 +3,20 @@ using Application.Common.Identity;
 using Domain.Order;
 using MediatR;
 
-namespace Application.Orders.Commands.ChangeOrderToShippedStatus;
+namespace Application.Orders.Commands.ChengeOrderToCancelledStstus;
 
-public class ChangeOrderToShippedStatusCommandHandler : IRequestHandler<ChangeOrderToShippedStatusCommand, bool>
+public class ChangeOrderToCancelledStatusCommandHandler : IRequestHandler<ChangeOrderToCancelledStatusCommand, bool>
 {
     private readonly IOrderRepository _orderRepository;
     private readonly ICurrentUser _currentUser;
 
-    public ChangeOrderToShippedStatusCommandHandler(IOrderRepository orderRepository, ICurrentUser currentUser)
+    public ChangeOrderToCancelledStatusCommandHandler(IOrderRepository orderRepository, ICurrentUser currentUser)
     {
         _orderRepository = orderRepository;
         _currentUser = currentUser;
     }
 
-    public async Task<bool> Handle(ChangeOrderToShippedStatusCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(ChangeOrderToCancelledStatusCommand request, CancellationToken cancellationToken)
     {
         var currentUserId = _currentUser.GetCurrentUserId();
 
@@ -27,14 +27,15 @@ public class ChangeOrderToShippedStatusCommandHandler : IRequestHandler<ChangeOr
             throw new NotFoundException($"找不到訂單（{request.OrderNo}）。");
         }
 
-        if (order.Status != OrderStatus.Placed || order.Status == OrderStatus.Shipped)
+        if (order.Status == OrderStatus.Cancelled)
         {
             throw new FailureException($"訂單狀態不符，無法變更。");
         }
 
-        order.Status = OrderStatus.Shipped;
-        order.ShippingInfo.ShippedAt = DateTimeOffset.Now;
-        order.ShippingInfo.ShippedBy = currentUserId;
+        order.Status = OrderStatus.Cancelled;
+        order.CancelledReason = request.Reason;
+        order.CancelledAt = DateTimeOffset.Now;
+        order.CancelledBy = currentUserId;
 
         _orderRepository.Update(order);
         await _orderRepository.SaveChangesAsync(cancellationToken);
