@@ -1,28 +1,50 @@
-﻿using Application.Common.Exceptions;
-using Application.Common.Interfaces;
+﻿using Application.Common.Interfaces;
+using Application.Common.Models;
 using Application.Common.Services.FileService;
+using Application.Common.Utils;
+using Application.Orders.Queries.Models;
 using Application.Products.Queries.Models;
 using Dapper;
-using Domain.Product;
 using MediatR;
-using static System.Net.Mime.MediaTypeNames;
+using System.Collections.Specialized;
+using System.Text;
 
-namespace Application.Products.Queries.GetProduct;
+namespace Application.Products.Queries.GetProducts;
 
-public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductResponse>
+public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, PaginatedList<ProductResponse>>
 {
     private readonly ISqlConnectionFactory _sqlConnectionFactory;
     private readonly IProductFileUploadService _productFileUploadService;
 
-    public GetProductQueryHandler(ISqlConnectionFactory sqlConnectionFactory, IProductFileUploadService productFileUploadService)
+    public GetProductsQueryHandler(ISqlConnectionFactory sqlConnectionFactory, IProductFileUploadService productFileUploadService)
     {
         _sqlConnectionFactory = sqlConnectionFactory;
         _productFileUploadService = productFileUploadService;
     }
 
-    public async Task<ProductResponse> Handle(GetProductQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<ProductResponse>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
         await using var conn = _sqlConnectionFactory.CreateConnection();
+
+        var whereSql = new StringBuilder();
+
+        if (request.Search is not null && !string.IsNullOrWhiteSpace(request.Search))
+        {
+            whereSql.Append(@" AND 
+                ( 
+                    [Product].[Name] LIKE @Search 
+                )
+            ");
+        }
+
+        var countSql = $@"
+	        SELECT COUNT([Product].[Id])
+			FROM [Product]
+			JOIN [User] AS [CreatedUser]
+				ON [CreatedUser].[Id] = [Product].[CreatedBy]
+			WHERE 1 = 1
+	        {whereSql}	
+		";
 
         var sql = $@"
             SELECT 
@@ -70,17 +92,26 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
 				ON [ProductImage].[ProductId] = [Product].[Id]
 			LEFT JOIN [Attachment] AS [ProductItemImage]
 				ON [ProductItemImage].[ProductItemId] = [ProductItem].[Id]
-			WHERE [Product].[Id] = @ProductId
+			WHERE 1 = 1
+            {whereSql}
+			ORDER BY [Product].[Id] DESC
+			OFFSET @Offset ROWS
+			FETCH NEXT @Next ROWS ONLY
         ";
 
+        (int Offset, int Next, int pageSize, int pageNumber) = QueryHelper.GetPagingParams(request.PageSize, request.PageNumber);
         var param = new
         {
-            ProductId = request.Id
+            Search = $"%{request.Search}%",
+            Offset,
+            Next
         };
+
+        var totalCount = await conn.QuerySingleAsync<int>(countSql, param);
 
         var productDictionary = new Dictionary<int, ProductResponse>();
 
-        var productResponse = (await conn.QueryAsync<ProductResponse, string, ProductItemDTO, ProductResponse>(
+        var productResponses = (await conn.QueryAsync<ProductResponse, string, ProductItemDTO, ProductResponse>(
                 sql,
                 (product, imagePath, productItem) =>
                 {
@@ -102,13 +133,8 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
                 },
                 param,
                 splitOn: "ImagePath,Id"
-            )).Distinct().SingleOrDefault();
+            )).Distinct().ToList();
 
-        if (productResponse is null)
-        {
-            throw new NotFoundException($"未找到商品編號 {request.Id} 的商品。請確保您輸入的編號正確，或者商品可能已被刪除。");
-        }
-
-        return productResponse;
+        return new PaginatedList<ProductResponse>(productResponses, totalCount, pageNumber, pageSize);
     }
 }

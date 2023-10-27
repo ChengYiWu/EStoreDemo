@@ -4,6 +4,8 @@ using Application.Products.Commands.DeleteProduct;
 using Application.Products.Commands.UpdateProduct;
 using Application.Products.Commands.UploadProductImage;
 using Application.Products.Queries.GetProduct;
+using Application.Products.Queries.GetProducts;
+using Application.Products.Queries.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +29,12 @@ public class ProductController : ControllerBase
     public async Task<ProductResponse> GetProduct(int id, CancellationToken cancellationToken)
     {
         var query = new GetProductQuery(id);
+        return await _sender.Send(query, cancellationToken);
+    }
+
+    [HttpGet]
+    public async Task<PaginatedList<ProductResponse>> GetProducts([FromQuery] GetProductsQuery query, CancellationToken cancellationToken)
+    {
         return await _sender.Send(query, cancellationToken);
     }
 
