@@ -4,6 +4,7 @@ using Application.Products.Commands.DeleteProduct;
 using Application.Products.Commands.UpdateProduct;
 using Application.Products.Commands.UploadProductImage;
 using Application.Products.Queries.GetProduct;
+using Application.Products.Queries.GetProductList;
 using Application.Products.Queries.GetProducts;
 using Application.Products.Queries.Models;
 using MediatR;
@@ -26,17 +27,25 @@ public class ProductController : ControllerBase
 
     [Authorize]
     [HttpGet]
-    [Route("{id:int}")]
-    public async Task<ProductResponse> GetProduct(int id, CancellationToken cancellationToken)
+    public async Task<PaginatedList<ProductResponse>> GetProducts([FromQuery] GetProductsQuery query, CancellationToken cancellationToken)
     {
-        var query = new GetProductQuery(id);
         return await _sender.Send(query, cancellationToken);
     }
 
     [Authorize]
     [HttpGet]
-    public async Task<PaginatedList<ProductResponse>> GetProducts([FromQuery] GetProductsQuery query, CancellationToken cancellationToken)
+    [Route("list")]
+    public async Task<ProductListResponse> GetProductList(CancellationToken cancellationToken)
     {
+        return await _sender.Send(new GetProductListQuery(), cancellationToken);
+    }
+
+    [Authorize]
+    [HttpGet]
+    [Route("{id:int}")]
+    public async Task<ProductResponse> GetProduct(int id, CancellationToken cancellationToken)
+    {
+        var query = new GetProductQuery(id);
         return await _sender.Send(query, cancellationToken);
     }
 
