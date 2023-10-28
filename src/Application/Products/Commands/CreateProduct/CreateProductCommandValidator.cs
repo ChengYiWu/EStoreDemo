@@ -66,7 +66,7 @@ public sealed class CreateProductCommandValidator : AbstractValidator<CreateProd
                     y.RuleFor(z => z.IsActive)
                         .NotEmpty()
                         .NotNull()
-                        .Boolean();
+                        .NullOrBoolean();
 
                     y.When(z => z.NewImage is not null, () =>
                     {

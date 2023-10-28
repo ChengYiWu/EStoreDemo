@@ -24,6 +24,7 @@ public class ProductController : ControllerBase
         _sender = sender;
     }
 
+    [Authorize]
     [HttpGet]
     [Route("{id:int}")]
     public async Task<ProductResponse> GetProduct(int id, CancellationToken cancellationToken)
@@ -32,6 +33,7 @@ public class ProductController : ControllerBase
         return await _sender.Send(query, cancellationToken);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<PaginatedList<ProductResponse>> GetProducts([FromQuery] GetProductsQuery query, CancellationToken cancellationToken)
     {

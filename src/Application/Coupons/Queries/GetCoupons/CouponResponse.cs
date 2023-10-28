@@ -1,4 +1,4 @@
-﻿namespace Application.Coupons.Queries.GetCoupon;
+﻿namespace Application.Coupons.Queries.GetCoupons;
 
 public class CouponResponse
 {

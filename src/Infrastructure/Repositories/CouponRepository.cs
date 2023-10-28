@@ -31,4 +31,9 @@ public class CouponRepository : BaseRepository<Coupon, int>, ICouponRepository
     {
         return await _context.Orders.AnyAsync(order => order.UsedCouponId == couponId);
     }
+
+    public async Task<Coupon?> GetByCodeAsync(string code)
+    {
+        return await _query.FirstOrDefaultAsync(c => c.Code == code);
+    }
 }

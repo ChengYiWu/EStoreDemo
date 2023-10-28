@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Identity;
+using Domain.Coupon;
 using Domain.Order;
 using Domain.Product;
 using MediatR;
@@ -10,17 +11,20 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, strin
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IProductRepository _productRepository;
+    private readonly ICouponRepository _couponRepository;
     private readonly IIdentityService _identityService;
     private readonly ICurrentUser _currentUser;
 
     public PlaceOrderCommandHandler(
         IOrderRepository orderRepository,
         IProductRepository productRepository,
+        ICouponRepository couponRepository,
         IIdentityService identityService,
         ICurrentUser currentUser)
     {
         _orderRepository = orderRepository;
         _productRepository = productRepository;
+        _couponRepository = couponRepository;
         _identityService = identityService;
         _currentUser = currentUser;
     }
@@ -34,6 +38,19 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, strin
         if (customer is null)
         {
             throw new NotFoundException("找不到顧客資料。");
+        }
+
+        Coupon? coupon = null;
+        if (request.CouponCode is not null)
+        {
+            var couponFromDb = await _couponRepository.GetByCodeAsync(request.CouponCode);
+
+            if (couponFromDb is null)
+            {
+                throw new NotFoundException($"找不到優惠券資料（{request.CouponCode}）。");
+            }
+
+            coupon = couponFromDb;
         }
 
         var requestProductItemIds = request.Items.Select(item => item.ProductItemId).ToList();
@@ -66,7 +83,7 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, strin
         }
 
         // 更新庫存（TODO: 嚴謹的情況可以在 Update 時檢查 rowVersion，若修改時 rowVersion 有變更，則表示資料舊的，需重新計算）
-        foreach(var product in products)
+        foreach (var product in products)
         {
             _productRepository.Update(product);
         }
@@ -98,6 +115,16 @@ public class PlaceOrderCommandHandler : IRequestHandler<PlaceOrderCommand, strin
                 };
             }).ToList()
         };
+
+        // 計算折扣
+        if (coupon is not null)
+        {
+            newOrder.PriceDiscount = coupon.GetDiscountPrice(newOrder.TotalPrice);
+            newOrder.UsedCoupon = coupon;
+        }
+
+        // 計算最終總價
+        newOrder.FinalTotalPrice = decimal.Round(newOrder.TotalPrice - (newOrder.PriceDiscount ?? 0m) + newOrder.ShippingInfo.ShippingFee, 0);
 
         _orderRepository.Add(newOrder);
         await _orderRepository.SaveChangesAsync(cancellationToken);

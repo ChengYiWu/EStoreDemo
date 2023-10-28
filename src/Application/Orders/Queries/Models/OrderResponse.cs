@@ -13,6 +13,8 @@ public class OrderResponse
     public string ShippedUserName { get; set; }
     public DateTimeOffset ShippedAt { get; set; }
     public decimal TotalPrice { get; set; }
+    public decimal? PriceDiscount { get; set; }
+    public decimal FinalTotalPrice { get; set; }
     public DateTimeOffset PlacedAt { get; set; }
     public string CancelledUserName { get; set; }
     public DateTimeOffset CancelledAt { get; set; }

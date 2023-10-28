@@ -18,6 +18,9 @@ public class PlaceOrderCommandValidator : AbstractValidator<PlaceOrderCommand>
             .NotNull()
             .NotEmpty();
 
+        RuleFor(x => x.CouponCode)
+            .NotEmpty();
+
         RuleFor(x => x.Items)
             .NotEmpty()
             .NotNull()

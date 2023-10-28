@@ -12,6 +12,9 @@ public class Order : BaseEntity<int>
 
     public ShippingInfo ShippingInfo { get; set; } = default!;
 
+    /// <summary>
+    /// 訂單總價
+    /// </summary>
     public decimal TotalPrice { get; set; }
 
     public DateTimeOffset PlacedAt { get; set; }
@@ -30,6 +33,16 @@ public class Order : BaseEntity<int>
     /// 簡單 Demo，故只可使用一張優惠券，實務上應該要有多個折扣
     /// </summary>
     public Coupon.Coupon? UsedCoupon { get; set; }
+
+    /// <summary>
+    /// 折扣價格 snapshot
+    /// </summary>
+    public decimal? PriceDiscount { get; set; }
+
+    /// <summary>
+    /// 最終總價（包含優惠券折扣與運費）
+    /// </summary>
+    public decimal FinalTotalPrice { get; set; }
 
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

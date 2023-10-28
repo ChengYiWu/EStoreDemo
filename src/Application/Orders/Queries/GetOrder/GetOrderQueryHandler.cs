@@ -32,6 +32,8 @@ public class GetOrderQueryHandler : IRequestHandler<GetOrderQuery, OrderResponse
 				[ShippedUser].[UserName] AS [ShippedUserName],
 				[Order].[ShippedAt],
 				[Order].[TotalPrice],
+                [Order].[PriceDiscount],    
+                [Order].[FinalTotalPrice],
 				[Order].[PlacedAt],
 				[CancelledUser].[UserName] AS [CancelledUserName],
 				[Order].[CancelledAt],

@@ -4,9 +4,9 @@ namespace Application.Common.Extensions;
 
 public static class ValidatorExtensions
 {
-    public static IRuleBuilderOptions<T, bool?> Boolean<T>(this IRuleBuilder<T, bool?> ruleBuilder)
+    public static IRuleBuilderOptions<T, bool?> NullOrBoolean<T>(this IRuleBuilder<T, bool?> ruleBuilder)
     {
-        return ruleBuilder.Must(a => a == false || a == true).WithMessage("請傳入 true 或 false");
+        return ruleBuilder.Must(a => a == null || (a == false || a == true)).WithMessage("請傳入 true 或 false");
     }
 
     public static IRuleBuilderOptions<T, string?> NullOrNotWhitespace<T>(this IRuleBuilder<T, string?> ruleBuilder)

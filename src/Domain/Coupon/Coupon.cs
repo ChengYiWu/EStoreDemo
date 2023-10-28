@@ -1,4 +1,5 @@
 ﻿using Domain.Common;
+using System.Dynamic;
 
 namespace Domain.Coupon;
 
@@ -27,4 +28,6 @@ public abstract class Coupon : BaseEntity<int>
     public DateTimeOffset? UpdatedAt { get; set; }
 
     public ICollection<CouponApplicableProduct> ApplicableProducts { get; set; } = new List<CouponApplicableProduct>();
+
+    public abstract decimal GetDiscountPrice(decimal price);
 }

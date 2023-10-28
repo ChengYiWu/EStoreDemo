@@ -7,6 +7,7 @@ public record PlaceOrderCommand(
     string ShippingAddress,
     string? Note,
     string CustomerId,
+    string? CouponCode,
     List<OrderItemDTO> Items
 ) : IRequest<string>;
 

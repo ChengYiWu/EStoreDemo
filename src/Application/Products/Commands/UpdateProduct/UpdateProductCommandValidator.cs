@@ -70,7 +70,7 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
                     y.RuleFor(z => z.IsActive)
                         .NotEmpty()
                         .NotNull()
-                        .Boolean();
+                        .NullOrBoolean();
 
                     y.RuleFor(z => z.OriImageId)
                         .NullOrNotWhitespace();

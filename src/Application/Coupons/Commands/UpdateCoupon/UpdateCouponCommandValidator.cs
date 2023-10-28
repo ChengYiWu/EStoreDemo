@@ -37,7 +37,7 @@ public class UpdateCouponCommandValidator : AbstractValidator<UpdateCouponComman
 
         RuleFor(x => x.IsActive)
             .NotNull()
-            .Boolean();
+            .NullOrBoolean();
 
         RuleFor(x => x.ApplicableProductIds)
             .ForEach(y =>

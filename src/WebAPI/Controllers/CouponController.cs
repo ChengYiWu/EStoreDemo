@@ -1,11 +1,16 @@
-﻿using Application.Coupons.Commands.CreateCoupon;
+﻿using Application.Common.Models;
+using Application.Coupons.Commands.CreateCoupon;
 using Application.Coupons.Commands.DeleteCoupon;
 using Application.Coupons.Commands.UpdateCoupon;
 using Application.Coupons.Queries.GetCoupon;
 using Application.Coupons.Queries.GetCouponList;
+using Application.Coupons.Queries.GetCoupons;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+
+using GetCouponResponse = Application.Coupons.Queries.GetCoupon.CouponResponse;
+using GetCouponsResponse = Application.Coupons.Queries.GetCoupons.CouponResponse;
 
 namespace WebAPI.Controllers
 {
@@ -33,9 +38,17 @@ namespace WebAPI.Controllers
         [HttpGet]
         [Route("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<CouponResponse> GetCoupon(int id, CancellationToken cancellationToken)
+        public async Task<GetCouponResponse> GetCoupon(int id, CancellationToken cancellationToken)
         {
             return await _sender.Send(new GetCouponQuery(id), cancellationToken);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<PaginatedList<GetCouponsResponse>> GetCoupons([FromQuery] GetCouponsQuery query, CancellationToken cancellationToken)
+        {
+            return await _sender.Send(query, cancellationToken);
         }
 
         /// <summary>
