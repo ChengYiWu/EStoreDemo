@@ -26,7 +26,7 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, UserResponse>
                 [User].[Id],
                 [User].[UserName],
                 [User].[Email], 
-                [Role].[Id] AS [RoleId],
+                [Role].[Id],
                 [Role].[Name]
             FROM [User]
             LEFT JOIN [UserRole]
