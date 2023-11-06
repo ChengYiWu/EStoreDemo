@@ -14,6 +14,18 @@ public static class DependentInjection
 {
     public static IServiceCollection AddWebAPIServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // CORS 設定
+        services.AddCors(options =>
+        {
+            // 正式環境請指定特定網域
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowAnyOrigin();
+            });
+        });
+
         // 停用預設 Model State 驗證，已改用 FluentValidation
         services.Configure<ApiBehaviorOptions>(options =>
         {
@@ -22,7 +34,7 @@ public static class DependentInjection
 
         JwtSettingsOption? jwtSettingOption = configuration
             .GetSection("JwtSettings")
-            .Get<JwtSettingsOption>() 
+            .Get<JwtSettingsOption>()
             ?? throw new ArgumentException(nameof(JwtSettingsOption));
 
         // JWT Token 驗證設定
