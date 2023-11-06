@@ -1,4 +1,6 @@
-﻿namespace Application.Products.Queries.Models;
+﻿using Application.Common.Models;
+
+namespace Application.Products.Queries.Models;
 
 public class ProductResponse
 {
@@ -16,7 +18,7 @@ public class ProductResponse
 
     public string CreatedUserName { get; set; }
 
-    public IList<string> Images { get; set; } = new List<string>();
+    public IList<ExistFile> Images { get; set; } = new List<ExistFile>();
 
     public IList<ProductItemDTO> ProductItems { get; set; } = new List<ProductItemDTO>();
 }
@@ -33,9 +35,11 @@ public class ProductItemDTO
 
     public bool IsActive { get; set; }
 
-    public int ImageId { get; set; }
+    public ExistFile? Image { get; set; }
 
-    public string? ImagePath { get; set; }
+    //public int ImageId { get; set; }
+
+    //public string? ImagePath { get; set; }
 
     public int PlacedOrderCount { get; set; }
 

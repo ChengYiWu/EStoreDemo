@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Common.Models;
 using Application.Common.Services.FileService;
 using Application.Products.Queries.Models;
 using Dapper;
@@ -32,14 +33,15 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
 				[Product].[Weight],
 				[Product].[Dimensions],
 				[CreatedUser].[UserName] AS [CreatedUserName],
-				[ProductImage].[Path] AS [ImagePath],
+				[ProductImage].[Id] AS [Id],
+				[ProductImage].[OriFileName] AS [OriFileName],
+				[ProductImage].[FileName] AS [FileName],
+                [ProductImage].[Path] AS [Path],
 				[ProductItem].[Id],
 				[ProductItem].[Name],
 				[ProductItem].[Price],
 				[ProductItem].[StockQuantity],
 				[ProductItem].[IsActive],
-				[ProductItemImage].[Id] AS [ImageId],
-				[ProductItemImage].[Path] AS [ImagePath],
 				(
 					SELECT COUNT([OrderItem].[Id]) 
 					FROM [Order]
@@ -60,7 +62,11 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
 					JOIN [OrderItem] ON [OrderItem].[OrderId] = [Order].[Id]
 					WHERE [Order].[Status] = 'Cancelled' AND
 						[OrderItem].[ProductItemId] =  [ProductItem].[Id] 
-				) AS [CancelledOrderCount]
+				) AS [CancelledOrderCount],
+				[ProductItemImage].[Id] AS [Id],
+				[ProductItemImage].[OriFileName] AS [OriFileName],
+				[ProductItemImage].[FileName] AS [FileName],
+                [ProductItemImage].[Path] AS [Path]
 			FROM [Product]
 			JOIN [User] AS [CreatedUser]
 				ON [CreatedUser].[Id] = [Product].[CreatedBy]
@@ -79,10 +85,11 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
         };
 
         var productDictionary = new Dictionary<int, ProductResponse>();
+        var productItemSet = new HashSet<int>();
 
-        var productResponse = (await conn.QueryAsync<ProductResponse, string, ProductItemDTO, ProductResponse>(
+        var productResponse = (await conn.QueryAsync<ProductResponse, ExistFile, ProductItemDTO, ExistFile, ProductResponse>(
                 sql,
-                (product, imagePath, productItem) =>
+                (product, productImage, productItem, productItemImage) =>
                 {
                     if (!productDictionary.TryGetValue(product.Id, out var productResponse))
                     {
@@ -90,18 +97,27 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
                         productDictionary.Add(product.Id, productResponse);
                     }
 
-                    productResponse.Images.Add(_productFileUploadService.FromRelativePathToAbsoluteUri(imagePath));
-
-                    if (productItem.ImagePath is not null)
+                    if(productImage is not null)
                     {
-                        productItem.ImagePath = _productFileUploadService.FromRelativePathToAbsoluteUri(productItem.ImagePath);
+                        productImage.Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productImage.Path);
+                        productResponse.Images.Add(productImage);
                     }
-                    productResponse.ProductItems.Add(productItem);
+
+                    if(!productItemSet.Contains(productItem.Id))
+                    {
+                        productItemSet.Add(productItem.Id);
+                        productResponse.ProductItems.Add(productItem);
+
+                        if(productItemImage is not null)
+                        {
+                            productItemImage.Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productItemImage.Path);
+                            productItem.Image = productItemImage;
+                        }
+                    }
 
                     return productResponse;
                 },
-                param,
-                splitOn: "ImagePath,Id"
+                param
             )).Distinct().SingleOrDefault();
 
         if (productResponse is null)
