@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Interfaces;
+using Application.Products.Queries.Models;
 using Application.Users.Queries.GetUsers;
 using Dapper;
 using MediatR;
@@ -39,37 +40,34 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, UserResponse>
 
         var param = new { request.Id };
 
-        var queryResult = await connection.QueryAsync<UserResponse, RoleDTO, UserResponse>(
+        var userDictionary = new Dictionary<string, UserResponse>();
+
+        var userResponse = (await connection.QueryAsync<UserResponse, RoleDTO, UserResponse>(
             querySql,
             (user, role) =>
             {
-                if (role.Name is not null)
+                if (!userDictionary.TryGetValue(user.Id, out var userResponse))
                 {
-                    user.Roles.Add(role);
+                    userResponse = user;
+                    userDictionary.Add(user.Id, userResponse);
                 }
 
-                return user;
+                if (role?.Name is not null)
+                {
+                    userResponse.Roles.Add(role);
+                }
+
+                return userResponse;
             },
             param
-        );
-
-        var userResult = queryResult
-                .GroupBy(user => user.Id)
-                .Select(g =>
-                {
-                    var groupedUser = g.First();
-                    groupedUser.Roles = g.Select(user => user.Roles.Single()).ToList();
-                    return groupedUser;
-                });
+        )).Distinct().SingleOrDefault();
 
 
-        var user = queryResult.SingleOrDefault();
-
-        if (user is null)
+        if (userResponse is null)
         {
             throw new NotFoundException($"找不到使用者（{request.Id}）。");
         }
 
-        return user;
+        return userResponse;
     }
 }
