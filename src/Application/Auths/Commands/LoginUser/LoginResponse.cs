@@ -1,4 +1,6 @@
-﻿namespace Application.Auths.Commands.LoginUser;
+﻿using Application.Common.Identity;
+
+namespace Application.Auths.Commands.LoginUser;
 
 public class LoginResponse
 {
@@ -11,5 +13,7 @@ public class LoginResponse
     /// 登入成功 refresh token
     /// </summary>
     public string RefreshToken { get; set; }
+
+    public IUser User { get; set;}
 }
 

@@ -25,11 +25,11 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginRe
 
         LoginResponse response = new()
         {
+            User = user,
             Token = _identityService.GenerateUserToken(user),
-
             // [ TODO ] 尚未實作 refresh token 機制
             // 機制：理論上須搭配 Redis 黑名單與資料庫紀錄 refresh token，並設定 token 為短期有效
-            RefreshToken = string.Empty
+            RefreshToken = string.Empty,
         };
 
         return response;
