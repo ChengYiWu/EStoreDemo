@@ -23,7 +23,6 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, bool>
         }
 
         user.UserName = request.UserName;
-        user.Email = request.Email;
 
         return await _identityService.UpdateUserAsync(user, request.RoleNames);
     }

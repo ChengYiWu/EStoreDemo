@@ -10,11 +10,5 @@ public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
             .NotEmpty()
             .NotNull()
             .MaximumLength(256);
-
-        RuleFor(x => x.Email)
-            .NotEmpty()
-            .NotNull()
-            .MaximumLength(256)
-            .EmailAddress();
     }
 }
