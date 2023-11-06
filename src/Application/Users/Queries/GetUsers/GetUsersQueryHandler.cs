@@ -41,7 +41,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
                 [User].[Email]
             FROM [User]
             {whereSql}
-            ORDER BY [User].[Id] ASC
+            ORDER BY [User].[Id] DESC
             OFFSET @Offset ROWS
             FETCH NEXT @Next ROWS ONLY
         ";
@@ -62,6 +62,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
         var detailSql = @"
             SELECT 
                 [User].[Id] AS [UserId], 
+                [Role].[Id],
                 [Role].[Name]
             FROM [User]
             JOIN [UserRole]
@@ -81,7 +82,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
         var userRoleLookup = userRoles
             .ToLookup(
                 userRole => userRole.UserId,
-                userRole => new RoleDTO { Name = userRole.Name }
+                userRole => new RoleDTO { Id = userRole.Id, Name = userRole.Name }
             );
 
         foreach (var userResponse in userReponses)
