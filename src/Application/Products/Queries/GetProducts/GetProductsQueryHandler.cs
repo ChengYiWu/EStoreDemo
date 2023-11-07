@@ -3,7 +3,9 @@ using Application.Common.Models;
 using Application.Common.Services.FileService;
 using Application.Common.Utils;
 using Application.Products.Queries.Models;
+using Application.Users.Queries.GetUsers;
 using Dapper;
+using Domain.Product;
 using MediatR;
 using System.Collections.Generic;
 using System.Text;
@@ -39,25 +41,50 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
         var countSql = $@"
 	        SELECT COUNT([Product].[Id])
 			FROM [Product]
-			JOIN [User] AS [CreatedUser]
-				ON [CreatedUser].[Id] = [Product].[CreatedBy]
 			WHERE 1 = 1
 	        {whereSql}	
 		";
 
-        var sql = $@"
-            SELECT 
+        var productMasterSql = $@"
+			SELECT COUNT([Product].[Id])
+			FROM [Product]
+			WHERE 1 = 1
+	        {whereSql}	
+
+			SELECT 
 				[Product].[Id],
 				[Product].[Name],
 				[Product].[Description],
 				[Product].[Brand],
 				[Product].[Weight],
 				[Product].[Dimensions],
-				[CreatedUser].[UserName] AS [CreatedUserName],
-				[ProductImage].[Id] AS [Id],
-				[ProductImage].[OriFileName] AS [OriFileName],
-				[ProductImage].[FileName] AS [FileName],
-                [ProductImage].[Path] AS [Path],
+				[CreatedUser].[UserName] AS [CreatedUserName]
+			FROM [Product]
+			JOIN [User] AS [CreatedUser]
+				ON [CreatedUser].[Id] = [Product].[CreatedBy]
+			WHERE 1 = 1
+            {whereSql}
+			ORDER BY [Product].[Id] DESC
+			OFFSET @Offset ROWS
+			FETCH NEXT @Next ROWS ONLY
+		";
+
+        (int Offset, int Next, int pageSize, int pageNumber) = QueryHelper.GetPagingParams(request.PageSize, request.PageNumber);
+        var param = new
+        {
+            Search = $"%{request.Search}%",
+            Offset,
+            Next
+        };
+
+        var queryReader = await conn.QueryMultipleAsync(productMasterSql, param);
+
+        var totalCount = await queryReader.ReadSingleAsync<int>();
+        var productResponses = await queryReader.ReadAsync<ProductResponse>();
+
+        var productItemDetailSql = $@"
+			SELECT 
+				[Product].[Id] AS [ProductId],
 				[ProductItem].[Id],
 				[ProductItem].[Name],
 				[ProductItem].[Price],
@@ -83,74 +110,103 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
 					JOIN [OrderItem] ON [OrderItem].[OrderId] = [Order].[Id]
 					WHERE [Order].[Status] = 'Cancelled' AND
 						[OrderItem].[ProductItemId] =  [ProductItem].[Id] 
-				) AS [CancelledOrderCount],
+				) AS [CancelledOrderCount]
+			FROM [Product]
+			LEFT JOIN [ProductItem]
+				ON [ProductItem].[ProductId] = [Product].[Id]
+			WHERE [Product].[Id] IN @Ids
+		";
+
+        var detailParam = new
+        {
+            Ids = productResponses.Select(x => x.Id)
+        };
+
+        var productItems = await conn.QueryAsync<ProductItemDTO>(productItemDetailSql, detailParam);
+
+        var productItemLookup = productItems
+            .ToLookup(
+                productItem => productItem.ProductId,
+                productItem => productItem
+            );
+
+        var imagesSql = $@"
+			SELECT 
+				[ProductImage].[ProductId],
+				[ProductImage].[Id] AS [Id],
+				[ProductImage].[OriFileName] AS [OriFileName],
+				[ProductImage].[FileName] AS [FileName],
+                [ProductImage].[Path] AS [Path]
+			FROM [Attachment] AS [ProductImage]
+            WHERE [ProductId] IN @ProductIds
+
+			SELECT 
+				[ProductItemImage].[ProductItemId],
 				[ProductItemImage].[Id] AS [Id],
 				[ProductItemImage].[OriFileName] AS [OriFileName],
 				[ProductItemImage].[FileName] AS [FileName],
                 [ProductItemImage].[Path] AS [Path]
-			FROM [Product]
-			JOIN [User] AS [CreatedUser]
-				ON [CreatedUser].[Id] = [Product].[CreatedBy]
-			LEFT JOIN [ProductItem]
-				ON [ProductItem].[ProductId] = [Product].[Id]
-			LEFT JOIN [Attachment] AS [ProductImage]
-				ON [ProductImage].[ProductId] = [Product].[Id]
-			LEFT JOIN [Attachment] AS [ProductItemImage]
-				ON [ProductItemImage].[ProductItemId] = [ProductItem].[Id]
-			WHERE 1 = 1
-            {whereSql}
-			ORDER BY [Product].[Id] DESC
-			OFFSET @Offset ROWS
-			FETCH NEXT @Next ROWS ONLY
-        ";
+			FROM [Attachment] AS [ProductItemImage]
+            WHERE [ProductItemId] IN @ProductItemIds
+		";
 
-        (int Offset, int Next, int pageSize, int pageNumber) = QueryHelper.GetPagingParams(request.PageSize, request.PageNumber);
-        var param = new
+        var imagesParam = new
         {
-            Search = $"%{request.Search}%",
-            Offset,
-            Next
+            ProductIds = productResponses.Select(x => x.Id),
+            ProductItemIds = productItems.Select(x => x.Id)
         };
 
-        var totalCount = await conn.QuerySingleAsync<int>(countSql, param);
+        var imagesReader = await conn.QueryMultipleAsync(imagesSql, imagesParam);
 
-        var productDictionary = new Dictionary<int, ProductResponse>();
-        var productImageSet = new HashSet<int>();
-        var productItemSet = new HashSet<int>();
+        var productImages = await imagesReader.ReadAsync();
+        var productItemImages = await imagesReader.ReadAsync();
 
-        var productResponses = (await conn.QueryAsync<ProductResponse, ExistFile, ProductItemDTO, ExistFile, ProductResponse >(
-                sql,
-                (product, productImage, productItem, productItemImage) =>
+        var productImageLookup = productImages
+            .ToLookup(
+                productImage => productImage.ProductId,
+                productImage => new ExistFile
                 {
-                    if (!productDictionary.TryGetValue(product.Id, out var productResponse))
-                    {
-                        productResponse = product;
-                        productDictionary.Add(product.Id, productResponse);
-                    }
+                    Id = productImage.Id,
+                    OriFileName = productImage.OriFileName,
+                    FileName = productImage.FileName,
+                    Path = productImage.Path,
+                    Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productImage.Path)
+                }
+            );
 
-					if(productImage is not null && !productImageSet.Contains(productImage.Id))
-                    {
-                        productImageSet.Add(productImage.Id);
-                        productImage.Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productImage.Path);
-                        productResponse.Images.Add(productImage);
-                    }
+        var productItemImageLookup = productItemImages
+            .ToLookup(
+                productItemImage => productItemImage.ProductItemId,
+                productItemImage => new ExistFile
+                {
+                    Id = productItemImage.Id,
+                    OriFileName = productItemImage.OriFileName,
+                    FileName = productItemImage.FileName,
+                    Path = productItemImage.Path,
+                    Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productItemImage.Path)
+                }
+            );
 
-                    if (!productItemSet.Contains(productItem.Id))
-					{
-						productItemSet.Add(productItem.Id);
-                        productResponse.ProductItems.Add(productItem);
+        foreach (var productResponse in productResponses)
+        {
+            if (productImageLookup.Contains(productResponse.Id))
+            {
+                productResponse.Images = productImageLookup[productResponse.Id].ToList();
+            }
 
-                        if (productItemImage is not null)
-						{
-                            productItemImage.Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productItemImage.Path);
-                            productItem.Image = productItemImage;
-                        }
-					}
+            if (productItemLookup.Contains(productResponse.Id))
+            {
+                productResponse.ProductItems = productItemLookup[productResponse.Id].ToList();
+            }
 
-					return productResponse;
-                },
-                param
-            )).Distinct().ToList();
+            foreach (var productItem in productResponse.ProductItems)
+            {
+                if (productItemImageLookup.Contains(productItem.Id))
+                {
+                    productItem.Image = productItemImageLookup[productItem.Id].FirstOrDefault();
+                }
+            }
+        }
 
         return new PaginatedList<ProductResponse>(productResponses, totalCount, pageNumber, pageSize);
     }
