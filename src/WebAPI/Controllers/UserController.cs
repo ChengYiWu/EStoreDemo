@@ -34,9 +34,9 @@ namespace WebAPI.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpPost]
         [Route("validEmail")]
-        public async Task<bool> ValidUserEmail([FromQuery] ValidUserEmailQuery query, CancellationToken cancellationToken)
+        public async Task<bool> ValidUserEmail(ValidUserEmailQuery query, CancellationToken cancellationToken)
         {
             return await _sender.Send(query, cancellationToken);
         }
@@ -70,7 +70,6 @@ namespace WebAPI.Controllers
         {
             var command = new UpdateUserCommand(
                 id,
-                parameter.Email,
                 parameter.UserName,
                 parameter.RoleNames
             );
