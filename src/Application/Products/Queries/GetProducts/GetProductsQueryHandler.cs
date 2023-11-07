@@ -49,6 +49,7 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
             SELECT 
 				[Product].[Id],
 				[Product].[Name],
+				[Product].[Description],
 				[Product].[Brand],
 				[Product].[Weight],
 				[Product].[Dimensions],
@@ -114,7 +115,8 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
         var totalCount = await conn.QuerySingleAsync<int>(countSql, param);
 
         var productDictionary = new Dictionary<int, ProductResponse>();
-		var productItemSet = new HashSet<int>();
+        var productImageSet = new HashSet<int>();
+        var productItemSet = new HashSet<int>();
 
         var productResponses = (await conn.QueryAsync<ProductResponse, ExistFile, ProductItemDTO, ExistFile, ProductResponse >(
                 sql,
@@ -126,8 +128,9 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
                         productDictionary.Add(product.Id, productResponse);
                     }
 
-					if(productImage is not null)
+					if(productImage is not null && !productImageSet.Contains(productImage.Id))
                     {
+                        productImageSet.Add(productImage.Id);
                         productImage.Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productImage.Path);
                         productResponse.Images.Add(productImage);
                     }

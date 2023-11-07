@@ -29,6 +29,7 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
             SELECT 
 				[Product].[Id],
 				[Product].[Name],
+                [Product].[Description],
 				[Product].[Brand],
 				[Product].[Weight],
 				[Product].[Dimensions],
@@ -85,6 +86,7 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
         };
 
         var productDictionary = new Dictionary<int, ProductResponse>();
+        var productImageSet = new HashSet<int>();
         var productItemSet = new HashSet<int>();
 
         var productResponse = (await conn.QueryAsync<ProductResponse, ExistFile, ProductItemDTO, ExistFile, ProductResponse>(
@@ -97,8 +99,9 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
                         productDictionary.Add(product.Id, productResponse);
                     }
 
-                    if(productImage is not null)
+                    if(productImage is not null && !productImageSet.Contains(productImage.Id) )
                     {
+                        productImageSet.Add(productImage.Id);
                         productImage.Uri = _productFileUploadService.FromRelativePathToAbsoluteUri(productImage.Path);
                         productResponse.Images.Add(productImage);
                     }
