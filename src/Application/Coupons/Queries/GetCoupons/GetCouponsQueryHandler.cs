@@ -52,15 +52,13 @@ public class GetCouponsQueryHandler : IRequestHandler<GetCouponsQuery, Paginated
             ");
         }
 
-        var countSql = @$"
+        var couponMasterSql = @$"
             SELECT 
                 COUNT([Coupon].[Id])
             FROM [Coupon]
             WHERE 1 = 1
             {whereSql}
-        ";
 
-        var sql = @$"
             SELECT 
                 [Coupon].[Id],
                 [Coupon].[Title],
@@ -73,7 +71,35 @@ public class GetCouponsQueryHandler : IRequestHandler<GetCouponsQuery, Paginated
                 [Coupon].[CreatedBy] AS [CreatedUserId],
                 [CreatedUser].[UserName] AS [CreatedUserName],
                 [Coupon].[PriceAmountDiscount],
-                [Coupon].[PricePercentDiscount],
+                [Coupon].[PricePercentDiscount]
+            FROM [Coupon]
+            LEFT JOIN [User] AS [CreatedUser]
+                ON [CreatedUser].[Id] = [Coupon].[CreatedBy]
+            WHERE 1 = 1
+            {whereSql}
+            ORDER BY [Coupon].[Id] DESC
+			OFFSET @Offset ROWS
+			FETCH NEXT @Next ROWS ONLY
+        ";
+
+        (int Offset, int Next, int pageSize, int pageNumber) = QueryHelper.GetPagingParams(request.PageSize, request.PageNumber);
+        var param = new
+        {
+            Search = $"%{request.Search}%",
+            request.IsActive,
+            request.Type,
+            Offset,
+            Next
+        };
+
+        var queryReader = await conn.QueryMultipleAsync(couponMasterSql, param);
+
+        var totalCount = await queryReader.ReadSingleAsync<int>();
+        var couponResponses = await queryReader.ReadAsync<CouponResponse>();
+
+        var productDetailSql = @$"
+            SELECT 
+                [Coupon].[Id] AS [CouponId],
                 [Product].[Id],
                 [Product].[Name],
                 (
@@ -87,39 +113,30 @@ public class GetCouponsQueryHandler : IRequestHandler<GetCouponsQuery, Paginated
                 ON [CouponApplicableProduct].[CouponId] = [Coupon].[Id]
             JOIN [Product]
                 ON [Product].[Id] = [CouponApplicableProduct].[ProductId]
-            WHERE 1 = 1
-            {whereSql}
+            WHERE [Coupon].[Id] IN @Ids
         ";
 
-        (int Offset, int Next, int pageSize, int pageNumber) = QueryHelper.GetPagingParams(request.PageSize, request.PageNumber);
-        var param = new
+        var detailParam = new
         {
-            request.Search,
-            request.IsActive,
-            request.Type
+            Ids = couponResponses.Select(x => x.Id)
         };
 
-        var totalCount = await conn.QuerySingleAsync<int>(countSql, param);
+        var products = await conn.QueryAsync<CouponApplicableProductDTO>(productDetailSql, detailParam);
 
-        var coupon = (await conn.QueryAsync<CouponResponse, CouponApplicableProductDTO, CouponResponse>(
-            sql,
-            (coupon, applicableProduct) =>
+        var productLookup = products
+           .ToLookup(
+               product => product.Id,
+               product => product
+           );
+        
+        foreach (var coupon in couponResponses)
+        {
+            if(productLookup.Contains(coupon.Id))
             {
-                CouponResponse couponResponse;
+                coupon.ApplicableProducts = productLookup[coupon.Id].ToList();
+            }
+        }
 
-                if (!couponDictionary.TryGetValue(coupon.Id, out couponResponse))
-                {
-                    couponResponse = coupon;
-                    couponDictionary.Add(coupon.Id, couponResponse);
-                }
-
-                couponResponse.ApplicableProducts.Add(applicableProduct);
-
-                return couponResponse;
-            },
-            param
-            )).Distinct().ToList();
-
-        return new PaginatedList<CouponResponse>(coupon, totalCount, pageNumber, pageSize);
+        return new PaginatedList<CouponResponse>(couponResponses, totalCount, pageNumber, pageSize);
     }
 }
