@@ -71,7 +71,11 @@ public class GetCouponsQueryHandler : IRequestHandler<GetCouponsQuery, Paginated
                 [Coupon].[CreatedBy] AS [CreatedUserId],
                 [CreatedUser].[UserName] AS [CreatedUserName],
                 [Coupon].[PriceAmountDiscount],
-                [Coupon].[PricePercentDiscount]
+                [Coupon].[PricePercentDiscount],
+                (
+                    SELECT COUNT([Order].[Id])
+                    FROM [Order] WHERE [Order].[UsedCouponId] = [Coupon].[Id]   
+                ) AS [UsedOrderCount]
             FROM [Coupon]
             LEFT JOIN [User] AS [CreatedUser]
                 ON [CreatedUser].[Id] = [Coupon].[CreatedBy]
@@ -125,7 +129,7 @@ public class GetCouponsQueryHandler : IRequestHandler<GetCouponsQuery, Paginated
 
         var productLookup = products
            .ToLookup(
-               product => product.Id,
+               product => product.CouponId,
                product => product
            );
         

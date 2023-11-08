@@ -6,8 +6,8 @@ public class CouponResponse
     public string Title { get; set; }
     public string Code { get; set; }
     public string Description { get; set; }
-    public DateTimeOffset StartedAt { get; set; }
-    public DateTimeOffset ExpiredAt { get; set; }
+    public DateTimeOffset? StartedAt { get; set; }
+    public DateTimeOffset? ExpiredAt { get; set; }
     public string Type { get; set; }
     public bool IsActive { get; set; }
     public string CreatedUserId { get; set; }

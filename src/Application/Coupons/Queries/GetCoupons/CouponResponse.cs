@@ -14,11 +14,13 @@ public class CouponResponse
     public string CreatedUserName { get; set; }
     public decimal? PriceAmountDiscount { get; set; }
     public decimal? PricePercentDiscount { get; set; }
+    public int UsedOrderCount { get; set; }
     public IList<CouponApplicableProductDTO> ApplicableProducts { get; set; } = new List<CouponApplicableProductDTO>();
 }
 
 public class CouponApplicableProductDTO
 {
+    public int CouponId { get; set; }
     public int Id { get; set; }
     public string Name { get; set; }
     public int ProductItemCount { get; set; }
