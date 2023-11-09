@@ -45,9 +45,9 @@ public class GetCouponQueryHandler : IRequestHandler<GetCouponQuery, CouponRespo
                 ON [CreatedUser].[Id] = [Coupon].[CreatedBy]
             LEFT JOIN [CouponApplicableProduct] 
                 ON [CouponApplicableProduct].[CouponId] = [Coupon].[Id]
-            JOIN [Product]
+            LEFT JOIN [Product]
                 ON [Product].[Id] = [CouponApplicableProduct].[ProductId]
-            WHERE [Coupon].[Id] = @id
+            WHERE [Coupon].[Id] = @Id
         ";
 
         var param = new { request.Id };
@@ -64,7 +64,10 @@ public class GetCouponQueryHandler : IRequestHandler<GetCouponQuery, CouponRespo
                     couponDictionary.Add(coupon.Id, couponResponse);
                 }
 
-                couponResponse.ApplicableProducts.Add(applicableProduct);
+                if(applicableProduct is not null)
+                {
+                    couponResponse.ApplicableProducts.Add(applicableProduct);
+                }
 
                 return couponResponse;
             },
