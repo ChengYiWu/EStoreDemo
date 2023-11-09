@@ -21,6 +21,10 @@ public class GetProductListQueryHanlder : IRequestHandler<GetProductListQuery, P
             SELECT 
 	            [Product].[Id],
 	            [Product].[Name],
+                [Product].[Description],
+                [Product].[Brand],
+                [Product].[Weight],
+                [Product].[Dimensions],
 	            [ProductItem].[Id],
 	            [ProductItem].[Name],
 	            [ProductItem].[Price],

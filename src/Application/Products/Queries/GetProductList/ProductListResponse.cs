@@ -1,4 +1,6 @@
-﻿namespace Application.Products.Queries.GetProductList;
+﻿using Application.Common.Models;
+
+namespace Application.Products.Queries.GetProductList;
 
 public class ProductListResponse
 {
@@ -23,5 +25,6 @@ public class ProductListProductItemDTO
     public decimal Price { get; set; }
 
     public int StockQuantity { get; set; }
+
 }
 

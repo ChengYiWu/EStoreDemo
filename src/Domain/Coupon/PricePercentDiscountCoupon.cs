@@ -6,6 +6,6 @@ public class PricePercentDiscountCoupon : Coupon
 
     public override decimal GetDiscountPrice(decimal price)
     {
-        return decimal.Round(price * (1 - PricePercentDiscount), 0);
+        return decimal.Round(price * ((100 - PricePercentDiscount) / 100), 0);
     }
 }
