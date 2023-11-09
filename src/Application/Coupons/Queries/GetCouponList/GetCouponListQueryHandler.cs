@@ -19,16 +19,42 @@ public class GetCouponListQueryHandler : IRequestHandler<GetCouponListQuery, Cou
 
         var sql = @"
             SELECT
-                [Id],
-                [Title],
-                [Code],
-                [Type],
-                [PriceAmountDiscount],
-                [PricePercentDiscount]
+                [Coupon].[Id],
+                [Coupon].[Title],
+                [Coupon].[Code],
+                [Coupon].[Type],
+                [Coupon].[PriceAmountDiscount],
+                [Coupon].[PricePercentDiscount],
+                [Product].[Id],
+                [Product].[Name]
             FROM [Coupon]
+            LEFT JOIN [CouponApplicableProduct] 
+                ON [CouponApplicableProduct].[CouponId] = [Coupon].[Id]
+            LEFT JOIN [Product]
+                ON [Product].[Id] = [CouponApplicableProduct].[ProductId]
+            WHERE [Coupon].[IsActive] = 1
         ";
 
-        var items = (await conn.QueryAsync<CouponListItemDTO>(sql, cancellationToken)).ToList();
+        var couponDictionary = new Dictionary<int, CouponListItemDTO>();
+
+        var items = (await conn.QueryAsync<CouponListItemDTO, CouponListItemProductDTO, CouponListItemDTO>(sql, (coupon, applicableProduct) =>
+        {
+            CouponListItemDTO couponResponse;
+
+            if (!couponDictionary.TryGetValue(coupon.Id, out couponResponse))
+            {
+                couponResponse = coupon;
+                couponDictionary.Add(coupon.Id, couponResponse);
+            }
+
+            if (applicableProduct is not null)
+            {
+                couponResponse.ApplicableProducts.Add(applicableProduct);
+            }
+
+            return couponResponse;
+
+        }, cancellationToken)).Distinct().ToList();
 
         return new CouponListReponse
         {

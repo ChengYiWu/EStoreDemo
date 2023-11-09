@@ -18,4 +18,13 @@ public class CouponListItemDTO
     public decimal? PriceAmountDiscount { get; set; }
 
     public decimal? PricePercentDiscount { get; set; }
+
+    public IList<CouponListItemProductDTO> ApplicableProducts { get; set; } = new List<CouponListItemProductDTO>();
+}
+
+public class CouponListItemProductDTO
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
 }
