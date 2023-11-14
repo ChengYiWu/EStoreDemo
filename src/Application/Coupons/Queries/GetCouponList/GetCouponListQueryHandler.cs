@@ -26,7 +26,11 @@ public class GetCouponListQueryHandler : IRequestHandler<GetCouponListQuery, Cou
                 [Coupon].[PriceAmountDiscount],
                 [Coupon].[PricePercentDiscount],
                 [Product].[Id],
-                [Product].[Name]
+                [Product].[Name],
+                (
+                    SELECT COUNT([ProductItem].[Id])
+                    FROM [ProductItem] WHERE [ProductItem].[ProductId] = [Product].[Id]
+                ) AS [ProductItemCount]   
             FROM [Coupon]
             LEFT JOIN [CouponApplicableProduct] 
                 ON [CouponApplicableProduct].[CouponId] = [Coupon].[Id]
