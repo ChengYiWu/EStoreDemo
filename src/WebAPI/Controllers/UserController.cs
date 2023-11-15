@@ -56,14 +56,14 @@ namespace WebAPI.Controllers
             return await _sender.Send(new GetUserQuery(id), cancellationToken);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<string> CreateUser(CreateUserCommand command, CancellationToken cancellationToken)
         {
             return await _sender.Send(command, cancellationToken);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut]
         [Route("{id}")]
         public async Task<IActionResult> UpdateUser(string id, UpdateUserParameter parameter, CancellationToken cancellationToken)
@@ -78,7 +78,7 @@ namespace WebAPI.Controllers
             return Ok();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(string id, CancellationToken cancellationToken)
         {
