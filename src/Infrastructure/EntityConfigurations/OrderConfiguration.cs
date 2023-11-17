@@ -70,6 +70,13 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(512)
             .IsRequired(false);
 
+        orderConfiguration.Property(x => x.FinalTotalPrice)
+            .HasColumnType("decimal(10,2)")
+            .IsRequired();
+
+        orderConfiguration.Property(x => x.PriceDiscount)
+            .HasColumnType("decimal(10,2)");
+
         orderConfiguration.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(p => p.CancelledBy)
