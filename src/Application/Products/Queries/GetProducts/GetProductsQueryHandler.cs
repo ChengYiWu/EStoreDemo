@@ -91,25 +91,25 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
 				[ProductItem].[StockQuantity],
 				[ProductItem].[IsActive],
 				(
-					SELECT COUNT([OrderItem].[Id]) 
+					SELECT SUM([OrderItem].[Quantity]) 
 					FROM [Order]
 					JOIN [OrderItem] ON [OrderItem].[OrderId] = [Order].[Id]
 					WHERE [Order].[Status] = 'Placed' AND
 						[OrderItem].[ProductItemId] =  [ProductItem].[Id] 
 				) AS [PlacedOrderCount],
 				(
-					SELECT COUNT([OrderItem].[Id]) 
+					SELECT SUM([OrderItem].[Quantity]) 
 					FROM [Order]
 					JOIN [OrderItem] ON [OrderItem].[OrderId] = [Order].[Id]
 					WHERE [Order].[Status] = 'Shipped' AND
 						[OrderItem].[ProductItemId] =  [ProductItem].[Id] 
 				) AS [ShippedOrderCount],
 				(
-					SELECT COUNT([OrderItem].[Id]) 
+					SELECT SUM([OrderItem].[Quantity]) 
 					FROM [Order]
 					JOIN [OrderItem] ON [OrderItem].[OrderId] = [Order].[Id]
 					WHERE [Order].[Status] = 'Cancelled' AND
-						[OrderItem].[ProductItemId] =  [ProductItem].[Id] 
+						[OrderItem].[ProductItemId] = [ProductItem].[Id] 
 				) AS [CancelledOrderCount]
 			FROM [Product]
 			LEFT JOIN [ProductItem]
