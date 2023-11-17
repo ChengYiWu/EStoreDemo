@@ -48,13 +48,12 @@ try
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
-    {
-        // 暫時先不用
-        //await app.InitialiseDatabaseAsync();
-
+    {   
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    await app.InitialiseDatabaseAsync();
 
     // 紀錄每個 Request 請求的 Log
     app.UseSerilogRequestLogging();
@@ -64,6 +63,8 @@ try
     app.UseMiddleware<TransactionMiddleware>();
 
     app.UseHttpsRedirection();
+
+    app.UseCors();
 
     app.UseAuthentication();
 
