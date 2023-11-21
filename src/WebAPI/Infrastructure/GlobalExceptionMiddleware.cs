@@ -87,7 +87,6 @@ public class GlobalExceptionMiddleware
     {
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-        // TODO，若是正式環境，應該要隱藏錯誤訊息
         return context.Response.WriteAsJsonAsync(new ProblemDetails()
         {
             Status = StatusCodes.Status500InternalServerError,
