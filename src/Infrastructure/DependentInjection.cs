@@ -29,7 +29,10 @@ public static class DependencyInjection
         // DbContext
         var connectionStringOptions = configuration.GetSection("ConnectionStrings").Get<ConnectionStringOption>();
         services.AddDbContext<EStoreContext>(
-            c => c.UseSqlServer(connectionStringOptions.DefaultConnection),
+            c => c.UseSqlServer(connectionStringOptions.DefaultConnection, options =>
+            {
+                options.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(15), errorNumbersToAdd: null);
+            }),
             ServiceLifetime.Scoped
         );
 
