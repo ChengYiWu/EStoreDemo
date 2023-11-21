@@ -30,6 +30,11 @@ public class UpdateCouponCommandHandler : IRequestHandler<UpdateCouponCommand, b
             throw new NotFoundException($"優惠券不存在（{request.Id}），請重新確認。");
         }
 
+        if(coupon.IsEditable.HasValue && !coupon.IsEditable.Value)
+        {
+            throw new FailureException("不可修改資料。");
+        }
+
         var isAnyOrderUsed = await _couponRepository.IsAnyOrderUsed(request.Id);
 
         // 未使用過的優惠券才能修改優惠券數值與領取代碼

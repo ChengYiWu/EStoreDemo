@@ -34,6 +34,7 @@ public class GetCouponQueryHandler : IRequestHandler<GetCouponQuery, CouponRespo
                 [CreatedUser].[UserName] AS [CreatedUserName],
                 [Coupon].[PriceAmountDiscount],
                 [Coupon].[PricePercentDiscount],
+                [Coupon].[IsEditable],
                 [Product].[Id],
                 [Product].[Name],
                 (

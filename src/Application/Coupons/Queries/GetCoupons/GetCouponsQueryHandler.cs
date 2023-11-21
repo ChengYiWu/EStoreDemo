@@ -72,6 +72,7 @@ public class GetCouponsQueryHandler : IRequestHandler<GetCouponsQuery, Paginated
                 [CreatedUser].[UserName] AS [CreatedUserName],
                 [Coupon].[PriceAmountDiscount],
                 [Coupon].[PricePercentDiscount],
+                [Coupon].[IsEditable],
                 (
                     SELECT COUNT([Order].[Id])
                     FROM [Order] WHERE [Order].[UsedCouponId] = [Coupon].[Id]   

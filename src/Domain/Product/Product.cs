@@ -64,4 +64,9 @@ public class Product : BaseEntity<int>
     /// 修改者
     /// </summary>
     public string? UpdatedBy { get; set; }
+
+    /// <summary>
+    /// 可否編輯
+    /// </summary>
+    public bool? IsEditable { get; set; }
 }

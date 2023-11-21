@@ -36,6 +36,10 @@ public class CouponConfiguration : IEntityTypeConfiguration<Coupon>
             .HasConversion<string>()
             .HasMaxLength(128);
 
+        couponCondiguration.Property(x => x.IsEditable)
+          .IsRequired()
+          .HasDefaultValue(true);
+
         couponCondiguration.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(p => p.CreatedBy)

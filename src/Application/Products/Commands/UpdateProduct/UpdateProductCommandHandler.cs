@@ -38,6 +38,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
             throw new NotFoundException($"未找到商品編號 {request.Id} 的商品。請確保您輸入的編號正確，或者商品可能已被刪除。");
         }
 
+        if (product.IsEditable.HasValue && !product.IsEditable.Value)
+        {
+            throw new FailureException("不可變更資料。");
+        }
+
         var newImages = new List<MoveFileParam>();
         var oldImages = new List<Attachment>();
 

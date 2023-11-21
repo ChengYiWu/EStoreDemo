@@ -38,6 +38,7 @@ public class GetOrderQueryHandler : IRequestHandler<GetOrderQuery, OrderResponse
 				[CancelledUser].[UserName] AS [CancelledUserName],
 				[Order].[CancelledAt],
 				[Order].[CancelledReason],
+                [Order].[IsEditable],
 				[OrderItem].[Id] AS [OrderItemId],
 				[OrderItem].[Price] AS [OrderItemPrice],
 				[OrderItem].[Quantity] AS [OrderItemQuantity],

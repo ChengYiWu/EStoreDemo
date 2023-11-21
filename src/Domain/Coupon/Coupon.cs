@@ -27,6 +27,11 @@ public abstract class Coupon : BaseEntity<int>
 
     public DateTimeOffset? UpdatedAt { get; set; }
 
+    /// <summary>
+    /// 可否編輯
+    /// </summary>
+    public bool? IsEditable { get; set; }
+
     public ICollection<CouponApplicableProduct> ApplicableProducts { get; set; } = new List<CouponApplicableProduct>();
 
     public abstract decimal GetDiscountPrice(decimal price);

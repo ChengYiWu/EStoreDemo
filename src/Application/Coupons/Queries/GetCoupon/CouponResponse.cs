@@ -14,6 +14,7 @@ public class CouponResponse
     public string CreatedUserName { get; set; }
     public decimal? PriceAmountDiscount { get; set; }
     public decimal? PricePercentDiscount { get; set; }
+    public bool? IsEditable { get; set; }
     public IList<CouponApplicableProductDTO> ApplicableProducts { get; set; } = new List<CouponApplicableProductDTO>();
 }
 

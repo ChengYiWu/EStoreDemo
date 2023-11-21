@@ -44,5 +44,10 @@ public class Order : BaseEntity<int>
     /// </summary>
     public decimal FinalTotalPrice { get; set; }
 
+    /// <summary>
+    /// 可否編輯
+    /// </summary>
+    public bool? IsEditable { get; set; }
+
     public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 }

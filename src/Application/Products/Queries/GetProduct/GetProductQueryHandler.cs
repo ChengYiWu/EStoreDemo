@@ -33,6 +33,7 @@ public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductRe
 				[Product].[Brand],
 				[Product].[Weight],
 				[Product].[Dimensions],
+                [Product].[IsEditable],
 				[CreatedUser].[UserName] AS [CreatedUserName],
 				[ProductImage].[Id] AS [Id],
 				[ProductImage].[OriFileName] AS [OriFileName],

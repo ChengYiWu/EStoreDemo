@@ -22,6 +22,11 @@ public class DeleteCouponCommandHandler : IRequestHandler<DeleteCouponCommand, b
             throw new NotFoundException($"優惠券不存在（{request.Id}），請重新確認。");
         }
 
+        if (coupon.IsEditable.HasValue && !coupon.IsEditable.Value)
+        {
+            throw new FailureException("不可刪除資料。");
+        }
+
         var isAnyOrderUsed = await _couponRepository.IsAnyOrderUsed(request.Id);
 
         if (isAnyOrderUsed)

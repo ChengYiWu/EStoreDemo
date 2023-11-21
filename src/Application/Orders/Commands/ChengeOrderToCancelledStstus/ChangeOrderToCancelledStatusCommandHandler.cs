@@ -27,6 +27,11 @@ public class ChangeOrderToCancelledStatusCommandHandler : IRequestHandler<Change
             throw new NotFoundException($"找不到訂單（{request.OrderNo}）。");
         }
 
+        if (order.IsEditable.HasValue && !order.IsEditable.Value)
+        {
+            throw new FailureException("不可變更資料。");
+        }
+
         if (order.Status == OrderStatus.Cancelled)
         {
             throw new FailureException($"訂單狀態不符，無法變更。");

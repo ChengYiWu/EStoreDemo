@@ -16,6 +16,8 @@ public class ProductResponse
 
     public string? Dimensions { get; set; }
 
+    public bool? IsEditable { get; set; }
+
     public string CreatedUserName { get; set; }
 
     public IList<ExistFile> Images { get; set; } = new List<ExistFile>();
@@ -38,10 +40,6 @@ public class ProductItemDTO
     public bool IsActive { get; set; }
 
     public ExistFile? Image { get; set; }
-
-    //public int ImageId { get; set; }
-
-    //public string? ImagePath { get; set; }
 
     public int PlacedOrderCount { get; set; }
 

@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Identity;
+using Domain.Coupon;
 using Domain.Order;
 using MediatR;
 
@@ -25,6 +26,11 @@ public class ChangeOrderToShippedStatusCommandHandler : IRequestHandler<ChangeOr
         if (order is null)
         {
             throw new NotFoundException($"找不到訂單（{request.OrderNo}）。");
+        }
+
+        if (order.IsEditable.HasValue && !order.IsEditable.Value)
+        {
+            throw new FailureException("不可變更資料。");
         }
 
         if (order.Status != OrderStatus.Placed || order.Status == OrderStatus.Shipped)

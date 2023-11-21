@@ -1,5 +1,6 @@
 ﻿using Application.Common.Exceptions;
 using Application.Common.Services.FileService;
+using Domain.Order;
 using Domain.Product;
 using MediatR;
 
@@ -23,6 +24,11 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand,
         if (product == null)
         {
             throw new NotFoundException($"未找到商品編號 {request.Id} 的商品。請確保您輸入的編號正確，或者商品可能已被刪除。");
+        }
+
+        if (product.IsEditable.HasValue && !product.IsEditable.Value)
+        {
+            throw new FailureException("不可刪除資料。");
         }
 
         // 蒐集要刪除的檔案

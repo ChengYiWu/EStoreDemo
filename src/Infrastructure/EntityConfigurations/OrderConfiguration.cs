@@ -28,6 +28,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .HasMaxLength(32)
             .IsRequired();
 
+        orderConfiguration.Property(x => x.IsEditable)
+           .IsRequired()
+           .HasDefaultValue(true);
+
         orderConfiguration.OwnsOne(x => x.ShippingInfo, shippingInfo =>
         {
             shippingInfo.Property(p => p.ContactPhone)

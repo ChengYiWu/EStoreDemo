@@ -58,6 +58,7 @@ public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, Paginat
 				[Product].[Brand],
 				[Product].[Weight],
 				[Product].[Dimensions],
+                [Product].[IsEditable],
 				[CreatedUser].[UserName] AS [CreatedUserName]
 			FROM [Product]
 			JOIN [User] AS [CreatedUser]

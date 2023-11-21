@@ -39,6 +39,10 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         productConfiguration.Property(x => x.CreatedAt)
             .IsRequired();
 
+        productConfiguration.Property(x => x.IsEditable)
+           .IsRequired()
+           .HasDefaultValue(true);
+
         productConfiguration.HasOne<ApplicationUser>()
             .WithMany()
             .HasForeignKey(x => x.CreatedBy)

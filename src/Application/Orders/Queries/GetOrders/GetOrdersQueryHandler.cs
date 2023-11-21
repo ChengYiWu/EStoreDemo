@@ -92,6 +92,7 @@ public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, PaginatedLi
 				[CancelledUser].[UserName] AS [CancelledUserName],
 				[Order].[CancelledAt],
 				[Order].[CancelledReason],
+                [Order].[IsEditable],
 				[OrderItem].[Id] AS [OrderItemId],
 				[OrderItem].[Price] AS [OrderItemPrice],
 				[OrderItem].[Quantity] AS [OrderItemQuantity],

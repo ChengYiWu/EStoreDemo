@@ -19,6 +19,7 @@ public class OrderResponse
     public string CancelledUserName { get; set; }
     public DateTimeOffset? CancelledAt { get; set; }
     public string CancelledReason { get; set; }
+    public bool? IsEditable { get; set; }
     public List<OrderItemDTO> OrderItems { get; set; } = new List<OrderItemDTO>();
 }
 
