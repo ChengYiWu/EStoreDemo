@@ -23,7 +23,7 @@ public class CreateCouponCommandHandler : IRequestHandler<CreateCouponCommand, i
     {
         var currentUserId = _currentUser.GetCurrentUserId();
 
-        if (request.ApplicableProductIds.Any() && !await _productRepository.IsAllProductsExist(request.ApplicableProductIds))
+        if (request.ApplicableProductIds != null &&  request.ApplicableProductIds.Any() && !await _productRepository.IsAllProductsExist(request.ApplicableProductIds))
         {
             throw new FailureException("部分商品資料不存在，請確認後重新新增。");
         }
