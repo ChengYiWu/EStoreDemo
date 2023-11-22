@@ -126,6 +126,11 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                 var productItemImageExpectedResult = _productFileUploadService
                     .GetMoveProductImageExcpectedResult(newProductItemImageParam, product.Id);
 
+                if (isExistImage)
+                {
+                    oldImages.Add(productItem.Image!);
+                }
+
                 productItem.Image = new ProductItemImageAttachment
                 {
                     FileName = productItemImageExpectedResult.File.FileName,
@@ -135,11 +140,6 @@ public class UpdateProductCommandHandler : IRequestHandler<UpdateProductCommand,
                     CreatedAt = DateTimeOffset.Now,
                     CreatedBy = currentUserId
                 };
-
-                if (isExistImage)
-                {
-                    oldImages.Add(productItem.Image!);
-                }
             }
 
             return productItem;
