@@ -23,7 +23,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
 
         var whereSql = new StringBuilder();
 
-        if (request.Search is not null && string.IsNullOrWhiteSpace(request.Search))
+        if (request.Search is not null && !string.IsNullOrWhiteSpace(request.Search))
         {
             whereSql.Append(@" AND 
                 ( [User].[UserName] LIKE @Search OR [User].[Email] LIKE @Search ) 
@@ -33,6 +33,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
         var sql = @$"
             SELECT COUNT([User].[Id])
             FROM [User]
+            WHERE 1 = 1
             {whereSql}
 
             SELECT 
@@ -40,6 +41,7 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, PaginatedList
                 [User].[UserName],
                 [User].[Email]
             FROM [User]
+            WHERE 1 = 1
             {whereSql}
             ORDER BY [User].[Id] DESC
             OFFSET @Offset ROWS
