@@ -51,3 +51,6 @@
 
 ### 其他
 1. 檔案上傳機制（上傳至 Azure Storage Blob）
+
+
+Sync Remote Check
